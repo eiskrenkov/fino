@@ -45,7 +45,7 @@ PLATFORMS
 
 DEPENDENCIES
   fino!
-  rubocop
+  rubocop (~> 1.80.1)
 
 BUNDLED WITH
    2.6.7

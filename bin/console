@@ -6,6 +6,27 @@ require 'fino'
 
 require 'irb'
 
+Fino.configure do |config|
+  config.adapter = Fino::Adapters::Memory.new
+
+  config.settings do
+    setting :api_key,
+            :string,
+            default: "default_api",
+            description: "API key for external service"
+
+    setting :retries, :integer, default: 3
+    setting :debug_mode, :boolean, default: false
+
+    section :http, label: "HTTP timeouts" do
+      setting :read_timeout, :float, default: 5.0
+      setting :open_timeout, :float, default: 2.0
+    end
+  end
+end
+
+# Fino.registry.settings
+
 IRB.start(__FILE__)
 
 
@@ -29,21 +50,6 @@ IRB.start(__FILE__)
 # end
 
 # Fino.set(:read_timeout, nil)
-
-Fino.settings do
-  setting :api_key,
-          :string,
-          default: "default_api",
-          description: "API key for external service"
-
-  setting :retries, :integer, default: 3
-  setting :debug_mode, :boolean, default: false
-
-  section :http, label: "HTTP timeouts" do
-    setting :read_timeout, :float, default: 5.0
-    setting :open_timeout, :float, default: 2.0
-  end
-end
 
 # Fino.setting(:read_timeout, section: :http)
 # Fino.setting(:read_timeout, :http)

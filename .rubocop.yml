@@ -1,2 +1,20 @@
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.0
+
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/HashSyntax:
+  EnforcedShorthandSyntax: never
+
+Style/Documentation:
+  Enabled: false
+
+Layout/LineLength:
+  Max: 120
+  AllowedPatterns:
+    - \A#
