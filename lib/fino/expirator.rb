@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Expirator
   def initialize(ttl:)
     @ttl = ttl

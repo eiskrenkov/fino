@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Fino::Setting
   attr_reader :key, :section, :raw_value
 
