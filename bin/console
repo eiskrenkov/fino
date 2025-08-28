@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bundler/setup'
+require 'fino'
+
+require 'irb'
+
+IRB.start(__FILE__)
+
+
+
+# Fino.configure do |fino|
+#   fino.adapter = Fino::Adapters::Memory.new # Fino::Adapters::Redis.new / Fino::Adapters::ActiveRecord.new
+#
+#   fino.cache = Fino::Cache::Memory.new(expires_in: 5)
+#
+#   fino.settings do |settings|
+#     settings.add :api_key, type: :string, default: "default_api"
+#   end
+# end
+
+# Fino::Settings.section "General" do
+#   setting :http_timeout, type: :float, default: 5.0
+# end
+
+# Fino::Settings.define do
+#   setting :http_timeout, type: :float, default: 5.0
+# end
+
+# Fino.set(:read_timeout, nil)
+
+Fino.settings do
+  setting :api_key,
+          :string,
+          default: "default_api",
+          description: "API key for external service"
+
+  setting :retries, :integer, default: 3
+  setting :debug_mode, :boolean, default: false
+
+  section :http, label: "HTTP timeouts" do
+    setting :read_timeout, :float, default: 5.0
+    setting :open_timeout, :float, default: 2.0
+  end
+end
+
+# Fino.setting(:read_timeout, section: :http)
+# Fino.setting(:read_timeout, :http)
+#
+# Flipper.setting(:api_key)
+#
+#
+# Flipper.enabled?(:asdsd)
+# Flipper.feature(:adsad)

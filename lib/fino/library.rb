@@ -1,4 +1,4 @@
-class Library
+class Fino::Library
   attr_reader :config
 
   def initialize(config)

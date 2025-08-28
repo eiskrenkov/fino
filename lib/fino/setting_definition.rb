@@ -3,10 +3,11 @@
 class Fino::SettingDefinition
   attr_reader :setting_name, :section_name, :type
 
-  def initialize(setting_name, section_name = nil, type)
+  def initialize(setting_name, section_name = nil, type, options)
     @setting_name = setting_name
     @section_name = section_name
     @type = type
+    @options = options
   end
 
   def type_class

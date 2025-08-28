@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+require "zeitwerk"
 
-
+loader = Zeitwerk::Loader.for_gem
+loader.setup
 
 module Fino::Settings::Definition
   def initialize(key, section)
@@ -16,12 +18,6 @@ class Fino::Settings::Definition::String
   include Fino::Settings::Definition
 end
 
-module Fino::Adapters::Redis
-  def read_multi(settings)
-    rails.hmget()
-  end
-end
-
 class Fino::Adapters::Solid
 end
 
@@ -33,18 +29,18 @@ class Configuration
   end
 end
 
-Fino::Adapters::Composition.new(
-  Fino::Cache::Memory.new,
-  Fino::Memoization.new,
-  Fino::Adapters::Redis.new,
-)
+# Fino::Adapters::Composition.new(
+#   Fino::Cache::Memory.new,
+#   Fino::Memoization.new,
+#   Fino::Adapters::Redis.new,
+# )
 
 class Fino::Registry
-  def initialize(setting_definitions)
-    @setting_definitions
+  def initialize(setting_definitions = {})
+    @setting_definitions = setting_definitions
   end
 
-  def fetch(setting_name, section_name)
+  def fetch(se  tting_name, section_name)
     if section_name
       @setting_definitions.dig(section_name, setting_name)
     else
@@ -59,8 +55,8 @@ class Fino::Registry
         @registry = registry
       end
 
-      def setting(setting_name, options = {})
-        registry.register(SettingDefinition.new(setting_name, section_name, options))
+      def setting(setting_name, type, options = {})
+        @registry.register(Fino::SettingDefinition.new(setting_name, section_name, type, options))
       end
     end
 
@@ -68,12 +64,12 @@ class Fino::Registry
       @registry = registry
     end
 
-    def setting(setting_name, options = {})
-      registry.register(SettingDefinition.new(setting_name, nil, options))
+    def setting(setting_name, type, options = {})
+      @registry.register(Fino::SettingDefinition.new(setting_name, nil, type, options))
     end
 
     def section(section_name, options = {})
-      SectionDSL.new(section_name, options, registry)
+      SectionDSL.new(section_name, options, @registry)
     end
   end
 
@@ -87,12 +83,22 @@ class Fino::Registry
 end
 
 module Fino
+  extend self
+
   def library
-    Thread.current[:fino_library] ||= Library.new
+    Thread.current[:fino_library] ||= Fino::Library.new
   end
 
   def settings(&)
-    settings_registry.instance_eval(&)
+    section_dsl.instance_eval(&)
+  end
+
+  def section_dsl
+    @section_dsl = Fino::Registry::DSL.new(settings_registry)
+  end
+
+  def settings_registry
+    @settings_registry ||= Fino::Registry.new
   end
 
   def setting(setting_name, section_name)
