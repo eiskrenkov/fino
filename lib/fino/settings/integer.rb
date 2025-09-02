@@ -3,7 +3,13 @@
 class Fino::Settings::Integer
   include Fino::Setting
 
-  def cast(raw_value)
-    raw_value.to_i
+  class << self
+    def serialize(value)
+      value.to_s
+    end
+
+    def deserialize(raw_value)
+      raw_value.to_i
+    end
   end
 end

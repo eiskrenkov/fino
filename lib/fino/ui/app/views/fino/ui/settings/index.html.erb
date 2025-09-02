@@ -1,0 +1,12 @@
+<ul>
+  <% @settings.each do |setting| %>
+    <li>
+      <strong><%= setting.name %></strong>
+      (<%= setting.class.name.demodulize %>)
+      - Default: <%= setting.default.inspect %>
+      <% if setting.section_name %>
+        <span class="text-gray-500">[Section: <%= setting.section_name %>]</span>
+      <% end %>
+    </li>
+  <% end %>
+</ul>

@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors  = ["Egor Iskrenkov"]
   spec.email    = ["egor@iskrenkov.me"]
 
-  spec.summary  = "Active Config"
-  spec.homepage = "https://github.com/eiskrenkov/active_config"
+  spec.summary  = "Elegant & performant settings engine for Ruby and Rails"
+  spec.homepage = "https://github.com/eiskrenkov/fino"
 
   spec.required_ruby_version = ">= 3.0.0"
 

@@ -1,56 +1,69 @@
 # frozen_string_literal: true
 
+require "forwardable"
 require "zeitwerk"
 
-loader = Zeitwerk::Loader.for_gem
-loader.setup
-
-# module Fino::Settings::Definition
-#   def initialize(key, section)
-#   end
-
-#   def value
-
-#   end
-# end
-
-# class Fino::Settings::Definition::String
-#   include Fino::Settings::Definition
-# end
-
-# class Fino::Adapters::Solid
-# end
-
 module Fino
-  extend self
+  module Configurable
+    def configure(&)
+      configuration.instance_eval(&)
+    end
+
+    private
+
+    def configuration
+      @configuration ||= Fino::Configuration.new(registry)
+    end
+  end
+
+  module SettingsAccessible
+    extend Forwardable
+
+    def_delegators :library,
+                   :value,
+                   :setting
+
+    module_function
+
+    def library
+      raise NotImplementedError
+    end
+  end
+
+  extend Configurable
+  extend SettingsAccessible
+
+  module_function
 
   def library
-    Thread.current[:fino_library] ||= Fino::Library.new
-  end
-
-  def configure(&)
-    yield(configuration)
-  end
-
-  def settings(&)
-    section_dsl.instance_eval(&)
-  end
-
-  def section_dsl
-    @section_dsl = Fino::Registry::DSL.new(registry)
+    Thread.current[:fino_library] ||= Fino::Library.new(configuration)
   end
 
   def registry
-    @registry ||= Fino::Registry.new
+    Thread.current[:fino_registry] ||= Fino::Registry.new
   end
 
-  def setting(setting_name, section_name)
-    library.read(setting_name.to_s, section_name.to_s)
-  end
-
-  private
-
-  def configuration
-    @configuration ||= Configuration.new(registry)
+  def root
+    File.expand_path("..", __dir__)
   end
 end
+
+Zeitwerk::Loader.for_gem.tap do |l|
+  root_relative_path = ->(path) { File.join(Fino.root, path) }
+
+  l.ignore(
+    [
+      root_relative_path.call("lib/fino-ui.rb"),
+      root_relative_path.call("lib/fino/ui.rb"),
+      root_relative_path.call("lib/fino/ui/"),
+
+      root_relative_path.call("lib/fino-redis.rb"),
+      root_relative_path.call("lib/fino/redis.rb"),
+      root_relative_path.call("lib/fino/redis/"),
+
+      root_relative_path.call("lib/fino/engine.rb")
+    ]
+  )
+end.setup
+
+require "fino/engine" if defined?(Rails)

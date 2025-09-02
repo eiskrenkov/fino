@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Fino::SettingDefinition
-  attr_reader :setting_name, :section_name, :type
+  attr_reader :setting_name, :section_name, :type, :options
 
   def initialize(setting_name, section_name = nil, type, options)
     @setting_name = setting_name
@@ -14,6 +14,12 @@ class Fino::SettingDefinition
     case type
     when :string
       Fino::Settings::String
+    when :integer
+      Fino::Settings::Integer
+    when :float
+      Fino::Settings::Float
+    when :boolean
+      Fino::Settings::Boolean
     else
       raise "Unknown type #{type}"
     end
