@@ -1,31 +1,32 @@
 # frozen_string_literal: true
 
-class Fino::Adapter::Proxy
-  def initialize(adapter, registry)
+class Fino::Pipeline::Adapter
+  def initialize(adapter)
     @adapter = adapter
-    @registry = registry
   end
 
-  def setting(setting_definition)
+  def read(setting_definition)
     to_setting(setting_definition, adapter.read(setting_definition))
   end
 
-  def all
-    definitions = registry.setting_definitions
-
-    definitions.zip(adapter.read_multi(definitions)).map do |definition, raw_data|
+  def read_multi(setting_definitions)
+    setting_definitions.zip(adapter.read_multi(setting_definitions)).map do |definition, raw_data|
       to_setting(definition, raw_data)
     end
   end
 
+  def write(setting_definition, value)
+    adapter.write(setting_definition, value)
+  end
+
   private
 
-  attr_reader :adapter, :registry
+  attr_reader :adapter
 
   def to_setting(setting_definition, raw_adapter_data)
     raw_value = adapter.fetch_value_from(raw_adapter_data)
 
-    setting_definition.type_class.new(
+    setting_definition.type_class.build(
       setting_definition,
       raw_value,
       **raw_adapter_data

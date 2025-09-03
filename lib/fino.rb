@@ -21,7 +21,9 @@ module Fino
 
     def_delegators :library,
                    :value,
-                   :setting
+                   :setting,
+                   :all,
+                   :set
 
     module_function
 

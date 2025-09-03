@@ -3,7 +3,11 @@
 module Fino::Setting
   UNSET_VALUE = Object.new.freeze
 
-  class << self
+  def self.included(base)
+    base.extend(ClassMethods)
+  end
+
+  module ClassMethods
     def serialize(value)
       raise NotImplementedError
     end
@@ -11,22 +15,23 @@ module Fino::Setting
     def deserialize(raw_value)
       raise NotImplementedError
     end
+
+    def build(setting_definition, raw_value, *options)
+      new(
+        setting_definition,
+        raw_value.equal?(UNSET_VALUE) ? setting_definition.options[:default] : deserialize(raw_value),
+        *options
+      )
+    end
   end
 
-  attr_reader :name, :section_name, :raw_value, :default, :options
+  attr_reader :name, :section_name, :value, :options
 
-  def initialize(setting_definition, raw_value, **options)
+  def initialize(setting_definition, value, **options)
     @name = setting_definition.setting_name
     @section_name = setting_definition.section_name
-    @raw_value = raw_value
+    @value = value
 
-    @default = setting_definition.options[:default]
     @options = options
-  end
-
-  def value
-    return @value if defined?(@value)
-
-    @value = raw_value.equal?(UNSET_VALUE) ? default : self.class.deserialize(raw_value)
   end
 end

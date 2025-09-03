@@ -13,4 +13,8 @@ class Fino::Cache::Memory
       @hash.clear
     end
   end
+
+  def write(key, value)
+    @hash[key] = value
+  end
 end

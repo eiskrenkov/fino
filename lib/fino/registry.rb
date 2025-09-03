@@ -51,7 +51,7 @@ class Fino::Registry
   end
 
   def fetch(*path)
-    @setting_definitions_by_path.dig(*path).tap do |definition|
+    @setting_definitions_by_path.dig(*path.reverse).tap do |definition|
       raise UnknownSetting, "Unknown setting: #{path.compact.join('.')}" unless definition
     end
   end

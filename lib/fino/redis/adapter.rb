@@ -16,7 +16,7 @@ class Fino::Redis::Adapter
   end
 
   def write(setting_definition, value)
-    redis.hset(redis_key_for(setting_definition), VALUE_KEY, setting_definition.class.serialize(value))
+    redis.hset(redis_key_for(setting_definition), VALUE_KEY, setting_definition.type_class.serialize(value))
   end
 
   def read_multi(setting_definitions)

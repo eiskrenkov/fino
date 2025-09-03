@@ -3,28 +3,6 @@
 require "forwardable"
 
 class Fino::Library
-  class Pipeline
-    def initialize(pipes = [])
-      @pipes = pipes
-    end
-
-    def use(pipe)
-      @pipes << pipe
-    end
-
-    def read(setting_definition)
-      traverse(setting_definition)
-    end
-
-    private
-
-    def traverse(setting_definition, index = 0)
-      @pipes[index]&.call(setting_definition) do
-        traverse(setting_definition, index + 1)
-      end
-    end
-  end
-
   def initialize(configuration)
     @configuration = configuration
   end
@@ -34,21 +12,29 @@ class Fino::Library
   end
 
   def setting(*setting_path)
-    pipeline.read(configuration.registry.fetch(*setting_path))
+    pipeline.read(build_setting_definition(*setting_path))
   end
 
   def all
-    adapter.all
+    pipeline.read_multi(configuration.registry.setting_definitions)
+  end
+
+  def set(value, *setting_path)
+    pipeline.write(value, build_setting_definition(*setting_path))
   end
 
   private
 
   attr_reader :configuration
 
+  def build_setting_definition(*setting_path)
+    configuration.registry.fetch(*setting_path)
+  end
+
   def pipeline
-    @pipeline ||= Pipeline.new.tap do |p|
-      p.use ->(setting_definition, &block) { cache.fetch(setting_definition, &block) }
-      p.use ->(setting_definition, &block) { adapter.setting(setting_definition) }
+    @pipeline ||= Fino::Pipeline.new.tap do |p|
+      p.use Fino::Pipeline::Cache.new(cache) if cache
+      p.use Fino::Pipeline::Adapter.new(adapter)
     end
   end
 
@@ -59,6 +45,6 @@ class Fino::Library
   end
 
   def adapter
-    @adapter ||= Fino::Adapter::Proxy.new(configuration.adapter_builder_block.call, configuration.registry)
+    @adapter ||= configuration.adapter_builder_block.call
   end
 end
