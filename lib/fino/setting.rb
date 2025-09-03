@@ -25,13 +25,24 @@ module Fino::Setting
     end
   end
 
-  attr_reader :name, :section_name, :value, :options
+  attr_reader :definition, :value
 
-  def initialize(setting_definition, value, **options)
-    @name = setting_definition.setting_name
-    @section_name = setting_definition.section_name
+  def initialize(definition, value, **options)
+    @definition = definition
     @value = value
 
     @options = options
+  end
+
+  def name
+    definition.setting_name
+  end
+
+  def section_name
+    definition.section_name
+  end
+
+  def default
+    definition.default
   end
 end

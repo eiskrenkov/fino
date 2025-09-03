@@ -42,7 +42,7 @@ module Fino
   end
 
   def registry
-    Thread.current[:fino_registry] ||= Fino::Registry.new
+    @registry ||= Fino::Registry.new
   end
 
   def root

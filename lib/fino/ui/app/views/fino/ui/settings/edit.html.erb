@@ -1,0 +1,182 @@
+<% content_for(:title, "Edit #{@setting.name}") %>
+<% content_for(:head) do %>
+  <style>
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+      display: block;
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      color: #0f172a;
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      transition: border-color 0.15s ease-in-out;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #0f172a;
+      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+    }
+
+    .form-select {
+      display: block;
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      color: #0f172a;
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      transition: border-color 0.15s ease-in-out;
+    }
+
+    .form-select:focus {
+      outline: none;
+      border-color: #0f172a;
+      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+    }
+
+    .form-checkbox {
+      width: 1rem;
+      height: 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      margin-right: 0.5rem;
+    }
+
+    .form-help {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 0.25rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .breadcrumb {
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+
+    .breadcrumb a {
+      color: #0f172a;
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .setting-info {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .setting-info-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #0f172a;
+    }
+
+    .setting-info-detail {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin-bottom: 0.25rem;
+    }
+  </style>
+<% end %>
+
+<div class="breadcrumb">
+  <%= link_to "Settings", root_path %> / Edit <%= @setting.name %>
+</div>
+
+<div class="header">
+  <h1>Edit Setting</h1>
+  <p>Modify the configuration value for this setting</p>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2 class="card-title"><%= @setting.name %></h2>
+  </div>
+  <div class="card-content">
+    <div class="setting-info">
+      <div class="setting-info-title">Setting Information</div>
+      <div class="setting-info-detail"><strong>Type:</strong> <%= @setting.class.name.demodulize %></div>
+      <% if @setting.section_name %>
+        <div class="setting-info-detail"><strong>Section:</strong> <%= @setting.section_name %></div>
+      <% end %>
+      <div class="setting-info-detail"><strong>Default:</strong> <code><%= @setting.definition.default.inspect %></code></div>
+      <% if @setting.definition.options[:description].present? %>
+        <div class="setting-info-detail"><strong>Description:</strong> <%= @setting.definition.options[:description] %></div>
+      <% end %>
+    </div>
+
+    <%= form_with url: setting_path(@setting.section_name ? "#{@setting.section_name}.#{@setting.name}" : @setting.name), method: :patch, local: true do |f| %>
+      <div class="form-group">
+        <%= f.label :value, class: "form-label" do %>
+          Current Value
+          <% if @setting.definition.options[:description].present? %>
+            <div class="form-help"><%= @setting.definition.options[:description] %></div>
+          <% end %>
+        <% end %>
+
+        <% case @setting.class.name.demodulize.downcase %>
+        <% when 'booleansetting' %>
+          <%= f.select :value,
+                      options_for_select([
+                        ['True', 'true'],
+                        ['False', 'false']
+                      ], @setting.value.to_s),
+                      {},
+                      { class: "form-select" } %>
+        <% when 'integersetting' %>
+          <%= f.number_field :value,
+                            value: @setting.value,
+                            class: "form-input",
+                            step: 1 %>
+        <% when 'floatsetting' %>
+          <%= f.number_field :value,
+                            value: @setting.value,
+                            class: "form-input",
+                            step: 0.1 %>
+        <% else %>
+          <%= f.text_field :value,
+                          value: @setting.value,
+                          class: "form-input" %>
+        <% end %>
+
+        <div class="form-help">
+          Default value: <%= @setting.definition.default.inspect %>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <%= f.submit "Update Setting", class: "btn btn-primary" %>
+        <%= link_to "Cancel", root_path, class: "btn btn-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

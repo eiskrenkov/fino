@@ -1,12 +1,159 @@
-<ul>
-  <% @settings.each do |setting| %>
-    <li>
-      <strong><%= setting.name %></strong>
-      (<%= setting.class.name.demodulize %>)
-      - Default: <%= setting.default.inspect %>
-      <% if setting.section_name %>
-        <span class="text-gray-500">[Section: <%= setting.section_name %>]</span>
-      <% end %>
-    </li>
-  <% end %>
-</ul>
+<% content_for(:title, 'Application Settings') %>
+<% content_for(:head) do %>
+  <style>
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .setting-item {
+      display: block;
+      padding: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      text-decoration: none;
+      color: inherit;
+      transition: background-color 0.15s ease-in-out;
+    }
+
+    .setting-item:hover {
+      background-color: #f8fafc;
+    }
+
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+
+    .setting-name {
+      font-weight: 600;
+      color: #0f172a;
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .setting-type {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      background-color: #f1f5f9;
+      color: #475569;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    .setting-value {
+      color: #0f172a;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
+      background-color: #f8fafc;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      font-weight: 500;
+    }
+
+    .setting-default {
+      color: #64748b;
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Courier New', monospace;
+    }
+
+    .setting-description {
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      font-style: italic;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #64748b;
+    }
+
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 1rem;
+      color: #cbd5e1;
+    }
+
+    @media (max-width: 640px) {
+      .settings-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+<% end %>
+
+<div class="header">
+  <h1>Application Settings</h1>
+  <p>Global configuration settings for your application</p>
+</div>
+
+<% 
+  # Group settings by section
+  grouped_settings = @settings.group_by { |setting| setting.section_name || 'Global' }
+  
+  if grouped_settings.empty?
+%>
+  <div class="empty-state">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+    </svg>
+    <h3>No settings configured</h3>
+    <p>Configure settings in your application to see them here.</p>
+  </div>
+<% else %>
+  <div class="settings-grid">
+    <% 
+      # Show Global settings first, then other sections
+      sections_order = grouped_settings.keys.sort_by { |section| section == 'Global' ? 0 : 1 }
+      sections_order.each do |section_name|
+        settings = grouped_settings[section_name]
+        is_global = section_name == 'Global'
+    %>
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <%= is_global ? 'Global Settings' : section_name.to_s.humanize %>
+          </h2>
+        </div>
+        <div class="card-content" style="padding: 0;">
+          <% settings.each do |setting| %>
+            <% 
+              # Create a unique key for the setting based on section and name
+              setting_key = [setting.section_name, setting.name].compact.join('.')
+            %>
+            <%= link_to edit_setting_path(setting_key), class: "setting-item" do %>
+              <div class="setting-name">
+                <%= setting.name %>
+                <span class="setting-type"><%= setting.class.name.demodulize %></span>
+              </div>
+              
+              <% if setting.definition.options[:description].present? %>
+                <div class="setting-description"><%= setting.definition.options[:description] %></div>
+              <% end %>
+              
+              <div class="setting-value">
+                <%= setting.value.inspect %>
+              </div>
+              
+              <div class="setting-default">
+                Default: <%= setting.default.inspect %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

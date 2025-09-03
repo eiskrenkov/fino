@@ -25,6 +25,10 @@ class Fino::SettingDefinition
     end
   end
 
+  def default
+    options[:default]
+  end
+
   def path
     @path ||= [setting_name, section_name].compact
   end
