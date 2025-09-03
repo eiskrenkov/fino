@@ -36,6 +36,6 @@ class Fino::Redis::Adapter
   attr_reader :redis, :redis_namespace
 
   def redis_key_for(setting_definition)
-    "#{redis_namespace}:#{setting_definition.path.join(":")}"
+    "#{redis_namespace}:#{setting_definition.path.join(':')}"
   end
 end

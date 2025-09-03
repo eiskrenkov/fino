@@ -11,8 +11,8 @@ Dir["fino-*.gemspec"].each do |file_name|
           development_group: sub_gem_name
 end
 
-gem "rails", "~> #{ENV['RAILS_VERSION'] || '8.0'}"
 gem "puma"
-gem 'sqlite3', "~> #{ENV['SQLITE_VERSION'] || '2.7'}"
+gem "rails", "~> #{ENV['RAILS_VERSION'] || '8.0'}"
+gem "sqlite3", "~> #{ENV['SQLITE_VERSION'] || '2.7'}"
 
 gem "rubocop", "~> 1.80.1", require: false

@@ -8,7 +8,7 @@ class Fino::UI::Engine < Rails::Engine
   paths["app"] << root.join("lib", "fino", "ui", "app")
   paths["config/initializers"] << root.join("lib", "fino", "ui", "config", "initializers")
 
-  initializer "fino.ui.append_view_paths" do |app|
+  initializer "fino.ui.append_view_paths" do |_app|
     ActiveSupport.on_load :action_controller do
       prepend_view_path Fino::UI::Engine.root.join("lib", "fino", "ui", "app", "views")
     end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Fino::Cache::Memory
   include Fino::Cache
 

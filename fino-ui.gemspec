@@ -22,5 +22,4 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "fino", "~> #{Fino::VERSION}"
-  spec.add_dependency "zeitwerk", "~> 2.5"
 end

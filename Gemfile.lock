@@ -8,7 +8,6 @@ PATH
       redis (>= 5.0)
     fino-ui (1.0.0)
       fino (~> 1.0.0)
-      zeitwerk (~> 2.5)
 
 GEM
   remote: https://rubygems.org/

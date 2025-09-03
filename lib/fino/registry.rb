@@ -3,7 +3,7 @@
 class Fino::Registry
   class DSL
     class SectionDSL
-      def initialize(section_name, options, registry)
+      def initialize(section_name, _options, registry)
         @section_name = section_name
         @registry = registry
       end
