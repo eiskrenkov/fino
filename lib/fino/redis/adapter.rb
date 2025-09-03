@@ -1,27 +1,22 @@
 # frozen_string_literal: true
 
-require "redis"
-
 class Fino::Redis::Adapter
   include Fino::Adapter
 
   DEFAULT_REDIS_NAMESPACE = "fino"
+  VALUE_KEY = "v"
 
-  def initialize(registry, namespace:, **options)
-    super(registry)
-
+  def initialize(redis, namespace: DEFAULT_REDIS_NAMESPACE)
+    @redis = redis
     @redis_namespace = namespace
-    @redis = ::Redis.new(options)
   end
-
-  protected
 
   def read(setting_definition)
     redis.hgetall(redis_key_for(setting_definition))
   end
 
   def write(setting_definition, value)
-    redis.hset(redis_key_for(setting_definition), "value", setting_definition.class.serialize(value))
+    redis.hset(redis_key_for(setting_definition), VALUE_KEY, setting_definition.class.serialize(value))
   end
 
   def read_multi(setting_definitions)
@@ -32,17 +27,15 @@ class Fino::Redis::Adapter
     end
   end
 
+  def fetch_value_from(raw_adapter_data)
+    raw_adapter_data.key?(VALUE_KEY) ? raw_adapter_data.delete(VALUE_KEY) : Fino::Setting::UNSET_VALUE
+  end
+
   private
 
   attr_reader :redis, :redis_namespace
 
   def redis_key_for(setting_definition)
-    if setting_definition.section_name
-      "#{redis_namespace}:#{setting_definition.section_name}:#{setting_definition.setting_name}"
-    else
-      "#{redis_namespace}:#{setting_definition.setting_name}"
-    end
+    "#{redis_namespace}:#{setting_definition.path.join(":")}"
   end
 end
-
-Fino::Adapter::Registry.register :redis, Fino::Redis::Adapter

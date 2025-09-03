@@ -8,8 +8,15 @@ class Fino::Registry
         @registry = registry
       end
 
-      def setting(setting_name, type, options = {})
-        @registry.register(Fino::SettingDefinition.new(setting_name, @section_name, type, options))
+      def setting(setting_name, type, **)
+        @registry.register(
+          Fino::SettingDefinition.new(
+            type: type,
+            setting_name: setting_name,
+            section_name: @section_name,
+            **
+          )
+        )
       end
     end
 
@@ -17,8 +24,14 @@ class Fino::Registry
       @registry = registry
     end
 
-    def setting(setting_name, type, options = {})
-      @registry.register(Fino::SettingDefinition.new(setting_name, nil, type, options))
+    def setting(setting_name, type, **)
+      @registry.register(
+        Fino::SettingDefinition.new(
+          type: type,
+          setting_name: setting_name,
+          **
+        )
+      )
     end
 
     def section(section_name, options = {}, &)
@@ -28,33 +41,24 @@ class Fino::Registry
 
   UnknownSetting = Class.new(Fino::Error)
 
+  using Fino::Ext::Hash
+
   attr_reader :setting_definitions_by_path, :setting_definitions
 
   def initialize
-    @setting_definitions_by_path = Hash.new { |h, k| h[k] = {} }
+    @setting_definitions_by_path = {}
     @setting_definitions = []
   end
 
-  def fetch(setting_name, section_name)
-    definition =
-      if section_name
-        @setting_definitions_by_path.dig(section_name, setting_name)
-      else
-        @setting_definitions_by_path[setting_name]
-      end
-
-    raise UnknownSetting, "Unknown setting: #{[section_name, setting_name].compact.join('.')}" unless definition
-
-    definition
+  def fetch(*path)
+    @setting_definitions_by_path.dig(*path).tap do |definition|
+      raise UnknownSetting, "Unknown setting: #{path.compact.join('.')}" unless definition
+    end
   end
 
   def register(setting_definition)
     @setting_definitions << setting_definition
 
-    if setting_definition.section_name
-      @setting_definitions_by_path[setting_definition.section_name][setting_definition.setting_name] = setting_definition
-    else
-      @setting_definitions_by_path[setting_definition.setting_name] = setting_definition
-    end
+    @setting_definitions_by_path.deep_set(setting_definition, *setting_definition.path)
   end
 end

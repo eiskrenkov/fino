@@ -1,20 +1,18 @@
 # frozen_string_literal: true
 
 class Fino::Configuration
-  attr_reader :registry, :adapter_instance, :cache_instance
+  attr_reader :registry, :adapter_builder_block, :cache_builder_block
 
   def initialize(registry)
     @registry = registry
-
-    @cache_instance = Fino::Cache::Null.new
   end
 
-  def adapter(adapter_name, **options)
-    @adapter_instance = Fino::Adapter::Registry.fetch(adapter_name.to_sym).new(registry, **options)
+  def adapter(&block)
+    @adapter_builder_block = block
   end
 
-  def cache(cache_name, **options)
-    # @cache_instance = Fino::Cache::Null.new
+  def cache(&block)
+    @cache_builder_block = block
   end
 
   def settings(&)

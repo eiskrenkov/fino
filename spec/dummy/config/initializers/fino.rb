@@ -1,8 +1,16 @@
 # frozen_string_literal: true
 
+require "fino-redis"
+
 Fino.configure do
-  adapter :redis, host: "redis.fino.orb.local",
-                  namespace: "fino_dummy"
+  adapter do
+    Fino::Redis::Adapter.new(
+      Redis.new(host: "redis.fino.orb.local"),
+      namespace: "fino_dummy"
+    )
+  end
+
+  cache { Fino::Cache::Memory.new(expires_in: 3.seconds) }
 
   settings do
     setting :support_email,

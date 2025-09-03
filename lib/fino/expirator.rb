@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Expirator
+class Fino::Expirator
   def initialize(ttl:)
     @ttl = ttl
     reset_timestamp

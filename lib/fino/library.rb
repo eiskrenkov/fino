@@ -3,55 +3,62 @@
 require "forwardable"
 
 class Fino::Library
-  extend Forwardable
+  class Pipeline
+    def initialize(pipes = [])
+      @pipes = pipes
+    end
 
-  def_delegators :configuration, :registry, :adapter_instance, :cache_instance
+    def use(pipe)
+      @pipes << pipe
+    end
 
-  def initialize(configuration)
-    @configuration = configuration
-    @memoized_settings = {}
-  end
+    def read(setting_definition)
+      traverse(setting_definition)
+    end
 
-  def value(setting_name, section_name = nil)
-    setting(setting_name, section_name).value
-  end
+    private
 
-  def setting(setting_name, section_name = nil)
-    setting_definition = registry.fetch(setting_name, section_name)
-
-    fetch_from_memoized_settings(setting_definition) do
-      fetch_from_cache(setting_definition) do
-        fetch_from_adapter(setting_definition)
+    def traverse(setting_definition, index = 0)
+      @pipes[index]&.call(setting_definition) do
+        traverse(setting_definition, index + 1)
       end
     end
   end
 
-  def sections
+  def initialize(configuration)
+    @configuration = configuration
+  end
+
+  def value(*setting_path)
+    setting(*setting_path).value
+  end
+
+  def setting(*setting_path)
+    pipeline.read(configuration.registry.fetch(*setting_path))
   end
 
   def all
-    adapter_instance.all
+    adapter.all
   end
 
   private
 
   attr_reader :configuration
 
-  def fetch_from_memoized_settings(setting_definition)
-    @memoized_settings.dig(*setting_definition.path) || yield
+  def pipeline
+    @pipeline ||= Pipeline.new.tap do |p|
+      p.use ->(setting_definition, &block) { cache.fetch(setting_definition, &block) }
+      p.use ->(setting_definition, &block) { adapter.setting(setting_definition) }
+    end
   end
 
-  def fetch_from_cache(setting_definition, &)
-    cache_instance.fetch(setting_definition.path, &)
+  def cache
+    return @cache if defined?(@cache)
+
+    @cache = configuration.cache_builder_block&.call
   end
 
-  def fetch_from_adapter(setting_definition)
-    adapter_instance.setting(setting_definition)
-  end
-
-  def read_multi
-    # setting_definitions.zip(adapter_instance.read_multi(setting_definitions.map(&:key))).each do |definition, raw_value|
-    #   definition.type_class.new(definition.key, definition.section, raw_value)
-    # end
+  def adapter
+    @adapter ||= Fino::Adapter::Proxy.new(configuration.adapter_builder_block.call, configuration.registry)
   end
 end

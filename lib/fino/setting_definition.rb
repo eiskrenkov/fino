@@ -3,7 +3,7 @@
 class Fino::SettingDefinition
   attr_reader :setting_name, :section_name, :type, :options
 
-  def initialize(setting_name, section_name = nil, type, options)
+  def initialize(type:, setting_name:, section_name: nil, **options)
     @setting_name = setting_name
     @section_name = section_name
     @type = type
@@ -26,7 +26,7 @@ class Fino::SettingDefinition
   end
 
   def path
-    section_name.nil? ? [setting_name] : [section_name, setting_name]
+    @path ||= [setting_name, section_name].compact
   end
 
   def key
