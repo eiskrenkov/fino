@@ -67,6 +67,8 @@ Rails.application.routes.draw do
 end
 ```
 
+<img width="1229" height="641" alt="Screenshot 2025-09-04 at 16 01 51" src="https://github.com/user-attachments/assets/646df84c-c25b-4890-9637-c481e18c9bd4" />
+
 ## TODO
 
 - Basic validations (presence, range, numericality)
