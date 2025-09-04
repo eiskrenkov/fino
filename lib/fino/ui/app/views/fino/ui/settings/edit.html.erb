@@ -144,7 +144,7 @@
         <% end %>
 
         <% case @setting.class.name.demodulize.downcase %>
-        <% when 'booleansetting' %>
+        <% when 'boolean' %>
           <%= f.select :value,
                       options_for_select([
                         ['True', 'true'],
@@ -152,12 +152,12 @@
                       ], @setting.value.to_s),
                       {},
                       { class: "form-select" } %>
-        <% when 'integersetting' %>
+        <% when 'integer' %>
           <%= f.number_field :value,
                             value: @setting.value,
                             class: "form-input",
                             step: 1 %>
-        <% when 'floatsetting' %>
+        <% when 'float' %>
           <%= f.number_field :value,
                             value: @setting.value,
                             class: "form-input",

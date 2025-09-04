@@ -35,6 +35,11 @@ Fino.configure do
               description: "Model temperature"
     end
 
+    section :feature_toggles, label: "Feature Toggles" do
+      setting :new_ui, :boolean, default: true
+      setting :beta_functionality, :boolean, default: false
+    end
+
     section :my_micro_service, label: "My Micro Service" do
       setting :http_read_timeout, :integer, default: 200 # in ms
       setting :http_open_timeout, :integer, default: 100 # in ms
@@ -71,5 +76,8 @@ end
 
 ## TODO
 
+- Preloading settings to be able to fetch all of them in one adapter call
+- Request scoped memoization when integrating with Rails
+- Nicer UI
 - Basic validations (presence, range, numericality)
 - Enum setting type

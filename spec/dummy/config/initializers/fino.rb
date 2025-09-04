@@ -13,17 +13,28 @@ Fino.configure do
   cache { Fino::Cache::Memory.new(expires_in: 3.seconds) }
 
   settings do
-    setting :support_email,
-            :string,
-            default: "support@fino.com",
-            description: "Support email address"
+    setting :maintenance_mode, :boolean, default: false
 
-    setting :retries, :integer, default: 3
-    setting :debug_mode, :boolean, default: false
+    section :openai, label: "OpenAI" do
+      setting :model,
+              :string,
+              default: "gpt-4o",
+              description: "OpenAI model"
 
-    section :http, label: "HTTP timeouts" do
-      setting :read_timeout, :float, default: 5.0
-      setting :open_timeout, :float, default: 2.0
+      setting :temperature,
+              :float,
+              default: 0.7,
+              description: "Model temperature"
+    end
+
+    section :feature_toggles, label: "Feature Toggles" do
+      setting :new_ui, :boolean, default: true
+      setting :beta_functionality, :boolean, default: false
+    end
+
+    section :my_micro_service, label: "My Micro Service" do
+      setting :http_read_timeout, :integer, default: 200 # in ms
+      setting :http_open_timeout, :integer, default: 100 # in ms
     end
   end
 end

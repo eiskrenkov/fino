@@ -1,13 +1,13 @@
 PATH
   remote: .
   specs:
-    fino (1.0.0)
+    fino (1.0.1)
       zeitwerk (~> 2.5)
-    fino-redis (1.0.0)
-      fino (~> 1.0.0)
+    fino-redis (1.0.1)
+      fino (~> 1.0.1)
       redis (>= 5.0)
-    fino-ui (1.0.0)
-      fino (~> 1.0.0)
+    fino-ui (1.0.1)
+      fino (~> 1.0.1)
 
 GEM
   remote: https://rubygems.org/
