@@ -53,6 +53,20 @@ Fino.set("gpt-5", :model, :openai)
 Fino.value(:model, :openai) #=> "gpt-5"
 ```
 
+### Manage settings via UI
+
+```ruby
+gem "fino-ui"
+```
+
+Mount Fino UI in your `config/routes.rb`:
+
+```ruby
+Rails.application.routes.draw do
+  mount Fino::UI::Engine, at: "/fino"
+end
+```
+
 ## TODO
 
 - Basic validations (presence, range, numericality)
