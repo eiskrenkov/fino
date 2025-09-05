@@ -24,6 +24,8 @@ class Fino::Pipeline
     @pipes.each do |pipe|
       pipe.write(setting_definition, value)
     end
+
+    value
   end
 
   private

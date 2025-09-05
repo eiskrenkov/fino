@@ -20,7 +20,12 @@ class Fino::Library
   end
 
   def set(value, *setting_path)
-    pipeline.write(value, build_setting_definition(*setting_path))
+    setting_definition = build_setting_definition(*setting_path)
+
+    pipeline.write(
+      setting_definition.type_class.deserialize(value),
+      setting_definition
+    )
   end
 
   private

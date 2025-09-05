@@ -145,13 +145,10 @@
 
         <% case @setting.class.name.demodulize.downcase %>
         <% when 'boolean' %>
-          <%= f.select :value,
-                      options_for_select([
-                        ['True', 'true'],
-                        ['False', 'false']
-                      ], @setting.value.to_s),
-                      {},
-                      { class: "form-select" } %>
+          <%= f.check_box :value,
+                        { class: "form-checkbox", checked: @setting.value },
+                        '1',
+                        '0' %>
         <% when 'integer' %>
           <%= f.number_field :value,
                             value: @setting.value,
