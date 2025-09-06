@@ -55,14 +55,18 @@ Zeitwerk::Loader.for_gem.tap do |l|
 
   l.ignore(
     [
+      # Fino UI
       root_relative_path.call("lib/fino-ui.rb"),
       root_relative_path.call("lib/fino/ui.rb"),
       root_relative_path.call("lib/fino/ui/"),
 
+      # Fino Redis
       root_relative_path.call("lib/fino-redis.rb"),
       root_relative_path.call("lib/fino/redis.rb"),
       root_relative_path.call("lib/fino/redis/"),
 
+      # Other
+      root_relative_path.call("lib/fino/metadata.rb"),
       root_relative_path.call("lib/fino/engine.rb")
     ]
   )

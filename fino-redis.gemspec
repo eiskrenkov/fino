@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "lib/fino/version"
+require_relative "lib/fino/metadata"
 
 Gem::Specification.new do |spec|
   spec.name     = "fino-redis"
@@ -11,16 +12,20 @@ Gem::Specification.new do |spec|
 
   spec.summary  = "Redis adapter for Fino settings engine"
   spec.homepage = "https://github.com/eiskrenkov/fino"
+  spec.license  = "MIT"
 
-  spec.required_ruby_version = ">= 3.0.0"
+  spec.required_ruby_version = Fino::REQUIRED_RUBY_VERSION
 
-  spec.metadata["homepage_uri"]    = spec.homepage
-  spec.metadata["source_code_uri"] = spec.homepage
-  spec.metadata["rubygems_mfa_required"] = "true"
+  Fino.metadata(spec)
 
-  spec.files         = Dir["README.md", "lib/fino/version.rb", "lib/fino/redis/**/*"]
   spec.require_paths = ["lib"]
+  spec.files = Dir[
+    "README.md",
+    "LICENSE",
+    "lib/fino/version.rb",
+    "lib/fino/redis/**/*"
+  ]
 
   spec.add_dependency "fino", "~> #{Fino::VERSION}"
-  spec.add_dependency "redis", ">= 5.0"
+  spec.add_dependency "redis", "~> 5.0"
 end
