@@ -3,11 +3,6 @@ PATH
   specs:
     fino (1.0.3)
       zeitwerk (~> 2.5)
-    fino-redis (1.0.3)
-      fino (~> 1.0.3)
-      redis (~> 5.0)
-    fino-ui (1.0.3)
-      fino (~> 1.0.3)
 
 GEM
   remote: https://rubygems.org/
@@ -187,10 +182,6 @@ GEM
     rdoc (6.14.2)
       erb
       psych (>= 4.0.0)
-    redis (5.4.1)
-      redis-client (>= 0.22.0)
-    redis-client (0.25.2)
-      connection_pool
     regexp_parser (2.11.2)
     reline (0.6.2)
       io-console (~> 0.5)
@@ -232,8 +223,6 @@ PLATFORMS
 
 DEPENDENCIES
   fino!
-  fino-redis!
-  fino-ui!
   puma
   rails (~> 8.0)
   rubocop (~> 1.80.1)

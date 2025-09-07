@@ -61,14 +61,14 @@ Fino.value(:model, :openai) #=> "gpt-5"
 ### Manage settings via UI
 
 ```ruby
-gem "fino-ui"
+gem "fino-rails"
 ```
 
-Mount Fino UI in your `config/routes.rb`:
+Mount Fino Rails engine in your `config/routes.rb`:
 
 ```ruby
 Rails.application.routes.draw do
-  mount Fino::UI::Engine, at: "/fino"
+  mount Fino::Rails::Engine, at: "/fino"
 end
 ```
 

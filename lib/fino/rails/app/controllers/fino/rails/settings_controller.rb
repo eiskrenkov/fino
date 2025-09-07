@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Fino::UI::SettingsController < Fino::UI::ApplicationController
+class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
   def index
     @settings = Fino.library.all
   end

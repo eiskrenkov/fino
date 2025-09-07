@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-class Fino::Pipeline::Cache
+class Fino::Pipe::Cache
+  include Fino::Pipe
+
   def initialize(cache)
     @cache = cache
   end

@@ -38,8 +38,10 @@ class Fino::Library
 
   def pipeline
     @pipeline ||= Fino::Pipeline.new.tap do |p|
-      p.use Fino::Pipeline::Cache.new(cache) if cache
-      p.use Fino::Pipeline::Adapter.new(adapter)
+      p.append Fino::Pipe::Cache.new(cache) if cache
+      p.append Fino::Pipe::Adapter.new(adapter)
+
+      p.instance_exec(&configuration.pipeline_builder_block) if configuration.pipeline_builder_block
     end
   end
 

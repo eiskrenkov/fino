@@ -5,8 +5,14 @@ class Fino::Pipeline
     @pipes = pipes
   end
 
-  def use(pipe)
+  def append(pipe)
+    raise ArgumentError, "Pipe must implement Fino::Pipe" unless pipe.is_a?(Fino::Pipe)
     @pipes << pipe
+  end
+
+  def prepend(pipe)
+    raise ArgumentError, "Pipe must implement Fino::Pipe" unless pipe.is_a?(Fino::Pipe)
+    @pipes.unshift(pipe)
   end
 
   def read(setting_definition)

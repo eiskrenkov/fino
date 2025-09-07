@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Fino::Configuration
-  attr_reader :registry, :adapter_builder_block, :cache_builder_block
+  attr_reader :registry, :adapter_builder_block, :cache_builder_block, :pipeline_builder_block
 
   def initialize(registry)
     @registry = registry
@@ -13,6 +13,10 @@ class Fino::Configuration
 
   def cache(&block)
     @cache_builder_block = block
+  end
+
+  def pipeline(&block)
+    @pipeline_builder_block = block
   end
 
   def settings(&)

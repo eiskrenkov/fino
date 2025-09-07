@@ -55,10 +55,10 @@ Zeitwerk::Loader.for_gem.tap do |l|
 
   l.ignore(
     [
-      # Fino UI
-      root_relative_path.call("lib/fino-ui.rb"),
-      root_relative_path.call("lib/fino/ui.rb"),
-      root_relative_path.call("lib/fino/ui/"),
+      # Fino Rails
+      root_relative_path.call("lib/fino-rails.rb"),
+      root_relative_path.call("lib/fino/rails.rb"),
+      root_relative_path.call("lib/fino/rails/"),
 
       # Fino Redis
       root_relative_path.call("lib/fino-redis.rb"),
@@ -67,9 +67,7 @@ Zeitwerk::Loader.for_gem.tap do |l|
 
       # Other
       root_relative_path.call("lib/fino/metadata.rb"),
-      root_relative_path.call("lib/fino/engine.rb")
+      root_relative_path.call("lib/fino/railtie.rb")
     ]
   )
 end.setup
-
-require "fino/engine" if defined?(Rails)

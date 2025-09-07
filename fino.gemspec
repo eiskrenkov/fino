@@ -9,10 +9,10 @@ SUBGEMS_FILES = [
   "lib/fino/redis.rb",
   "lib/fino/redis/**/*",
 
-  # Fino UI
-  "lib/fino-ui.rb",
-  "lib/fino/ui.rb",
-  "lib/fino/ui/**/*",
+  # Fino Rails
+  "lib/fino-rails.rb",
+  "lib/fino/rails.rb",
+  "lib/fino/rails/**/*",
 ]
 
 Gem::Specification.new do |spec|

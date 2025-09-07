@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-class Fino::Pipeline::Adapter
+class Fino::Pipe::Adapter
+  include Fino::Pipe
+
   def initialize(adapter)
     @adapter = adapter
   end
