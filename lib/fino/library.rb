@@ -7,20 +7,29 @@ class Fino::Library
     @configuration = configuration
   end
 
-  def value(*setting_path)
-    setting(*setting_path).value
+  def value(setting_name, at: nil)
+    setting(setting_name, at: at).value
   end
 
-  def setting(*setting_path)
-    pipeline.read(build_setting_definition(*setting_path))
+  def values(*setting_names, at: nil)
+    settings(*setting_names, at: at).map(&:value)
+  end
+
+  def setting(setting_name, at: nil)
+    pipeline.read(build_setting_definition(setting_name, at: at))
+  end
+
+  def settings(*setting_names, at: nil)
+    setting_definitions = setting_names.map { |name| build_setting_definition(name, at: at) }
+    pipeline.read_multi(setting_definitions)
   end
 
   def all
     pipeline.read_multi(configuration.registry.setting_definitions)
   end
 
-  def set(value, *setting_path)
-    setting_definition = build_setting_definition(*setting_path)
+  def set(value, setting_name, at: nil)
+    setting_definition = build_setting_definition(setting_name, at: at)
 
     pipeline.write(
       setting_definition.type_class.deserialize(value),
@@ -32,8 +41,8 @@ class Fino::Library
 
   attr_reader :configuration
 
-  def build_setting_definition(*setting_path)
-    configuration.registry.fetch(*setting_path)
+  def build_setting_definition(setting_name, at: nil)
+    configuration.registry.fetch(setting_name, at)
   end
 
   def pipeline

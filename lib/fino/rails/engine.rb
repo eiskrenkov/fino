@@ -24,20 +24,43 @@ class Fino::Rails::Engine < Rails::Engine
   end
 
   #
-  # Request scoped cache
+  # Configuration
   #
 
-  initializer "fino.pipeline" do
-    if defined?(Rails::Server)
-      Fino.configure do
-        pipeline do
-          use Fino::Rails::RequestScopedCache::Pipe
+  config.before_configuration do
+    config.fino = ActiveSupport::OrderedOptions.new.update(
+      instrument: Rails.env.development?,
+      log: Rails.env.development?
+    )
+  end
+
+  #
+  # Initializers
+  #
+
+  initializer "fino.log", after: :load_config_initializers do |app|
+    config = app.config.fino
+
+    require "fino/rails/instrumentation/log_subscriber" if config.instrument && config.log
+  end
+
+  initializer "fino.pipeline" do |app|
+    config = app.config.fino
+
+    Fino.configure do
+      pipeline do
+        if config.instrument
+          wrap do |pipe|
+            Fino::Rails::Instrumentation::Pipe.new(pipe)
+          end
         end
+
+        use Fino::Rails::RequestScopedCache::Pipe if defined?(Rails::Server)
       end
     end
   end
 
-  initializer "fino.middleware" do |app|
+  initializer "fino.request_scoped_caching.middleware" do |app|
     app.middleware.use Fino::Rails::RequestScopedCache::Middleware if defined?(Rails::Server)
   end
 end

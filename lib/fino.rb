@@ -5,8 +5,8 @@ require "zeitwerk"
 
 module Fino
   module Configurable
-    def configure(&)
-      configuration.instance_eval(&)
+    def configure(&block)
+      configuration.instance_eval(&block)
     end
 
     private
@@ -21,7 +21,9 @@ module Fino
 
     def_delegators :library,
                    :value,
+                   :values,
                    :setting,
+                   :settings,
                    :all,
                    :set
 
