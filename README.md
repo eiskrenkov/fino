@@ -51,11 +51,13 @@ end
 ### Work with settings
 
 ```ruby
-Fino.value(:model, :openai) #=> "gpt-4o"
-Fino.value(:temperature, :openai) #=> 0.7
+Fino.value(:model, at: :openai) #=> "gpt-4o"
+Fino.value(:temperature, at: :openai) #=> 0.7
 
-Fino.set("gpt-5", :model, :openai)
-Fino.value(:model, :openai) #=> "gpt-5"
+Fino.values(:model, :temperature, at: :openai) #=> ["gpt-4", 0.7]
+
+Fino.set("gpt-5", :model, at: :openai)
+Fino.value(:model, at: :openai) #=> "gpt-5"
 ```
 
 ### Manage settings via UI
