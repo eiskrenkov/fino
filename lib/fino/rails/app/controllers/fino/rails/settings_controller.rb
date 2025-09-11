@@ -6,23 +6,19 @@ class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
   end
 
   def edit
-    setting_path = parse_setting_path(params[:key])
+    setting_name, at = parse_setting_path(params[:key])
 
-    @setting = Fino.setting(*setting_path)
+    @setting = Fino.setting(setting_name, at: at)
   end
 
   def update
-    begin
-      # Parse the key to create the setting path
-      setting_path = parse_setting_path(params[:key])
+    setting_name, at = parse_setting_path(params[:key])
 
-      # Update the setting using the correct API
-      Fino.set(params[:value], *setting_path)
+    Fino.set(params[:value], setting_name, at: at)
 
-      redirect_to root_path, notice: "Setting updated successfully"
-    rescue Fino::Registry::UnknownSetting
-      redirect_to root_path, alert: "Setting not found"
-    end
+    redirect_to root_path, notice: "Setting updated successfully"
+  rescue Fino::Registry::UnknownSetting
+    redirect_to root_path, alert: "Setting not found"
   end
 
   private

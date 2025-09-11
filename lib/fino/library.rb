@@ -32,8 +32,8 @@ class Fino::Library
     setting_definition = build_setting_definition(setting_name, at: at)
 
     pipeline.write(
-      setting_definition.type_class.deserialize(value),
-      setting_definition
+      setting_definition,
+      setting_definition.type_class.deserialize(value)
     )
   end
 

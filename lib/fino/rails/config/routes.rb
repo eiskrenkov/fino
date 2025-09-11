@@ -3,5 +3,6 @@
 Fino::Rails::Engine.routes.draw do
   root to: "settings#index"
 
-  resources :settings, only: %i[index edit update], param: :key
+  get "settings/*key", to: "settings#edit", as: :edit_setting
+  put "settings/*key", to: "settings#update", as: :update_setting
 end

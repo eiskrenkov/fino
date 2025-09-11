@@ -134,7 +134,7 @@
       <% end %>
     </div>
 
-    <%= form_with url: setting_path(@setting.section_name ? "#{@setting.section_name}.#{@setting.name}" : @setting.name), method: :patch, local: true do |f| %>
+    <%= form_with url: update_setting_path(@setting.key), method: :put, local: true do |f| %>
       <div class="form-group">
         <%= f.label :value, class: "form-label" do %>
           Current Value
