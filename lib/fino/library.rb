@@ -37,21 +37,17 @@ class Fino::Library
   end
 
   def pipeline
-    @pipeline ||= Fino::Pipeline.new.tap do |p|
-      p.append Fino::Pipe::Cache.new(cache) if cache
-      p.append Fino::Pipe::Adapter.new(adapter)
-
+    @pipeline ||= Fino::Pipeline.new(storage).tap do |p|
+      p.use Fino::Pipe::Cache, cache if cache
       p.instance_exec(&configuration.pipeline_builder_block) if configuration.pipeline_builder_block
     end
   end
 
-  def cache
-    return @cache if defined?(@cache)
-
-    @cache = configuration.cache_builder_block&.call
+  def storage
+    Fino::Pipe::Storage.new(configuration.adapter_builder_block.call)
   end
 
-  def adapter
-    @adapter ||= configuration.adapter_builder_block.call
+  def cache
+    defined?(@cache) ? @cache : @cache = configuration.cache_builder_block&.call
   end
 end

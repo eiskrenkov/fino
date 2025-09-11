@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Fino::Pipe::Adapter
+class Fino::Pipe::Storage
   include Fino::Pipe
 
   def initialize(adapter)

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-class Fino::Rails::Engine < ::Rails::Engine
+require "fino-rails"
+
+class Fino::Rails::Engine < Rails::Engine
   isolate_namespace Fino::Rails
 
   #
@@ -26,14 +28,16 @@ class Fino::Rails::Engine < ::Rails::Engine
   #
 
   initializer "fino.pipeline" do
-    Fino.configure do
-      pipeline do
-        prepend Fino::Rails::RequestScopedCache::Pipe.new
+    if defined?(Rails::Server)
+      Fino.configure do
+        pipeline do
+          use Fino::Rails::RequestScopedCache::Pipe
+        end
       end
     end
   end
 
   initializer "fino.middleware" do |app|
-    app.middleware.use Fino::Rails::RequestScopedCache::Middleware
+    app.middleware.use Fino::Rails::RequestScopedCache::Middleware if defined?(Rails::Server)
   end
 end

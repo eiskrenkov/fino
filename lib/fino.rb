@@ -35,6 +35,8 @@ module Fino
   extend Configurable
   extend SettingsAccessible
 
+  EMPTINESS = Object.new.freeze
+
   module_function
 
   def library
@@ -43,6 +45,20 @@ module Fino
 
   def registry
     @registry ||= Fino::Registry.new
+  end
+
+  def logger
+    @logger ||= begin
+      require "logger"
+
+      Logger.new($stdout).tap do |l|
+        l.progname = name
+        l.level = ENV.fetch("FINO_LOG_LEVEL", "info")
+        l.formatter = proc do |severity, datetime, progname, msg|
+          "[#{progname}] #{severity}: #{msg}\n"
+        end
+      end
+    end
   end
 
   def root

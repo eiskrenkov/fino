@@ -28,7 +28,7 @@ class Fino::Redis::Adapter
   end
 
   def fetch_value_from(raw_adapter_data)
-    raw_adapter_data.key?(VALUE_KEY) ? raw_adapter_data.delete(VALUE_KEY) : Fino::Setting::UNSET_VALUE
+    raw_adapter_data.key?(VALUE_KEY) ? raw_adapter_data.delete(VALUE_KEY) : Fino::EMPTINESS
   end
 
   private

@@ -34,6 +34,6 @@ class Fino::SettingDefinition
   end
 
   def key
-    path.join("_")
+    @key ||= path.reverse.join("/")
   end
 end

@@ -6,7 +6,7 @@ class Fino::Rails::RequestScopedCache::Middleware
   end
 
   def call(env)
-    Fino::Rails::RequestScopedCache::Pipe.with_store do
+    Fino::Rails::RequestScopedCache::Pipe.with_temporary_cache do
       @app.call(env)
     end
   end

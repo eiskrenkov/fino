@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 module Fino::Setting
-  UNSET_VALUE = Object.new.freeze
-
   def self.included(base)
     base.extend(ClassMethods)
   end
@@ -19,7 +17,7 @@ module Fino::Setting
     def build(setting_definition, raw_value, *options)
       new(
         setting_definition,
-        raw_value.equal?(UNSET_VALUE) ? setting_definition.options[:default] : deserialize(raw_value),
+        raw_value.equal?(Fino::EMPTINESS) ? setting_definition.options[:default] : deserialize(raw_value),
         *options
       )
     end
@@ -38,11 +36,25 @@ module Fino::Setting
     definition.setting_name
   end
 
+  def key
+    definition.key
+  end
+
   def section_name
     definition.section_name
   end
 
   def default
     definition.default
+  end
+
+  def inspect
+    attributes = [
+      "key=#{key.inspect}",
+      "value=#{value.inspect}",
+      "default=#{default.inspect}"
+    ]
+
+    "#<#{self.class.name} #{attributes.join(', ')}>"
   end
 end

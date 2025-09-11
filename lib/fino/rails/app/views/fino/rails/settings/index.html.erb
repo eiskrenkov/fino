@@ -98,10 +98,10 @@
   <p>Global configuration settings for your application</p>
 </div>
 
-<% 
+<%
   # Group settings by section
   grouped_settings = @settings.group_by { |setting| setting.section_name || 'Global' }
-  
+
   if grouped_settings.empty?
 %>
   <div class="empty-state">
@@ -114,7 +114,7 @@
   </div>
 <% else %>
   <div class="settings-grid">
-    <% 
+    <%
       # Show Global settings first, then other sections
       sections_order = grouped_settings.keys.sort_by { |section| section == 'Global' ? 0 : 1 }
       sections_order.each do |section_name|
@@ -129,24 +129,20 @@
         </div>
         <div class="card-content" style="padding: 0;">
           <% settings.each do |setting| %>
-            <% 
-              # Create a unique key for the setting based on section and name
-              setting_key = [setting.section_name, setting.name].compact.join('.')
-            %>
-            <%= link_to edit_setting_path(setting_key), class: "setting-item" do %>
+            <%= link_to edit_setting_path(setting.key), class: "setting-item" do %>
               <div class="setting-name">
                 <%= setting.name %>
                 <span class="setting-type"><%= setting.class.name.demodulize %></span>
               </div>
-              
+
               <% if setting.definition.options[:description].present? %>
                 <div class="setting-description"><%= setting.definition.options[:description] %></div>
               <% end %>
-              
+
               <div class="setting-value">
                 <%= setting.value.inspect %>
               </div>
-              
+
               <div class="setting-default">
                 Default: <%= setting.default.inspect %>
               </div>

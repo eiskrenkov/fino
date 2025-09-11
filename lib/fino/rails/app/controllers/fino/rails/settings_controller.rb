@@ -28,6 +28,6 @@ class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
   private
 
   def parse_setting_path(key)
-    key.split('.').map(&:to_sym).reverse
+    key.split("/").map(&:to_sym).reverse
   end
 end
