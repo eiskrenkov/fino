@@ -4,6 +4,10 @@ require "fino"
 
 module Fino
   module Rails
+    module Preloading
+      autoload :Middleware, "fino/rails/preloading/middleware"
+    end
+
     module RequestScopedCache
       autoload :Pipe, "fino/rails/request_scoped_cache/pipe"
       autoload :Middleware, "fino/rails/request_scoped_cache/middleware"

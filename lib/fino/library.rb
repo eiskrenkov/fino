@@ -20,21 +20,37 @@ class Fino::Library
   end
 
   def settings(*setting_names, at: nil)
-    setting_definitions = setting_names.map { |name| build_setting_definition(name, at: at) }
+    setting_definitions =
+      if setting_names.empty? && at.nil?
+        configuration.registry.setting_definitions
+      else
+        setting_names.map { |name| build_setting_definition(name, at: at) }
+      end
+
     pipeline.read_multi(setting_definitions)
   end
 
-  def all
-    pipeline.read_multi(configuration.registry.setting_definitions)
+  def set(**setting_names_to_values)
+    at = setting_names_to_values.delete(:at)
+
+    setting_names_to_values.each do |setting_name, value|
+      setting_definition = build_setting_definition(setting_name, at: at)
+
+      pipeline.write(
+        setting_definition,
+        setting_definition.type_class.deserialize(value)
+      )
+    end
   end
 
-  def set(value, setting_name, at: nil)
-    setting_definition = build_setting_definition(setting_name, at: at)
+  def slice(**mapping)
+    setting_definitions = mapping.each_with_object([]) do |(section_name, setting_names), memo|
+      Array(setting_names).each do |setting_name|
+        memo << build_setting_definition(setting_name, at: section_name)
+      end
+    end
 
-    pipeline.write(
-      setting_definition,
-      setting_definition.type_class.deserialize(value)
-    )
+    pipeline.read_multi(setting_definitions)
   end
 
   private
@@ -42,7 +58,7 @@ class Fino::Library
   attr_reader :configuration
 
   def build_setting_definition(setting_name, at: nil)
-    configuration.registry.fetch(setting_name, at)
+    configuration.registry.fetch(setting_name.to_s, at.to_s)
   end
 
   def pipeline

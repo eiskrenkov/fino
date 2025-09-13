@@ -56,7 +56,7 @@ Fino.value(:temperature, at: :openai) #=> 0.7
 
 Fino.values(:model, :temperature, at: :openai) #=> ["gpt-4", 0.7]
 
-Fino.set("gpt-5", :model, at: :openai)
+Fino.set(model: "gpt-5", at: :openai)
 Fino.value(:model, at: :openai) #=> "gpt-5"
 ```
 

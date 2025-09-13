@@ -24,7 +24,7 @@ module Fino
                    :values,
                    :setting,
                    :settings,
-                   :all,
+                   :slice,
                    :set
 
     module_function

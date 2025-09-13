@@ -2,6 +2,10 @@
 
 require "fino-redis"
 
+Rails.application.configure do
+  config.fino.preload_before_request = true
+end
+
 Fino.configure do
   adapter do
     Fino::Redis::Adapter.new(
@@ -14,6 +18,7 @@ Fino.configure do
 
   settings do
     setting :maintenance_mode, :boolean, default: false
+    setting :test, :boolean, default: false
 
     section :openai, label: "OpenAI" do
       setting :model,

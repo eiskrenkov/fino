@@ -2,7 +2,7 @@
 
 class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
   def index
-    @settings = Fino.library.all
+    @settings = Fino.library.settings
   end
 
   def edit
@@ -14,7 +14,7 @@ class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
   def update
     setting_name, at = parse_setting_path(params[:key])
 
-    Fino.set(params[:value], setting_name, at: at)
+    Fino.set(setting_name => params[:value], at: at)
 
     redirect_to root_path, notice: "Setting updated successfully"
   rescue Fino::Registry::UnknownSetting

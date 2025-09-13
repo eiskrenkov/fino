@@ -30,7 +30,9 @@ class Fino::Rails::Engine < Rails::Engine
   config.before_configuration do
     config.fino = ActiveSupport::OrderedOptions.new.update(
       instrument: Rails.env.development?,
-      log: Rails.env.development?
+      log: Rails.env.development?,
+      cache_within_request: true,
+      preload_before_request: false
     )
   end
 
@@ -55,12 +57,20 @@ class Fino::Rails::Engine < Rails::Engine
           end
         end
 
-        use Fino::Rails::RequestScopedCache::Pipe if defined?(Rails::Server)
+        use Fino::Rails::RequestScopedCache::Pipe if defined?(Rails::Server) && config.cache_within_request
       end
     end
   end
 
   initializer "fino.request_scoped_caching.middleware" do |app|
-    app.middleware.use Fino::Rails::RequestScopedCache::Middleware if defined?(Rails::Server)
+    config = app.config.fino
+
+    if defined?(Rails::Server)
+      app.middleware.use Fino::Rails::RequestScopedCache::Middleware if config.cache_within_request
+
+      if config.preload_before_request
+        app.middleware.use Fino::Rails::Preloading::Middleware, preload: config.preload_before_request
+      end
+    end
   end
 end

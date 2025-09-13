@@ -12,7 +12,7 @@ class Fino::Pipeline
   end
 
   def use(pipe_class, *args, **kwargs, &block)
-    pipes.unshift ->(pipe) { pipe_class.new(pipe, *args, **kwargs, &block) }
+    pipes << ->(pipe) { pipe_class.new(pipe, *args, **kwargs, &block) }
     @pipeline = nil
   end
 

@@ -59,6 +59,6 @@ class Fino::Registry
   def register(setting_definition)
     @setting_definitions << setting_definition
 
-    @setting_definitions_by_path.deep_set(setting_definition, *setting_definition.path)
+    @setting_definitions_by_path.deep_set(setting_definition, *setting_definition.path.map(&:to_s))
   end
 end
