@@ -21,7 +21,11 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
   spec.files = Dir[
     "README.md",
+    "LICENSE",
     "lib/fino/version.rb",
+
+    "lib/fino-rails.rb",
+    "lib/fino/rails.rb",
     "lib/fino/rails/**/*"
   ]
 

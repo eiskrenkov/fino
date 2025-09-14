@@ -23,6 +23,9 @@ Gem::Specification.new do |spec|
     "README.md",
     "LICENSE",
     "lib/fino/version.rb",
+
+    "lib/fino-redis.rb",
+    "lib/fino/redis.rb",
     "lib/fino/redis/**/*"
   ]
 
