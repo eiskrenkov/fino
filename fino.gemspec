@@ -5,15 +5,13 @@ require_relative "lib/fino/metadata"
 
 SUBGEMS_FILES = [
   # Fino Redis
-  "lib/fino-redis.rb",
   "lib/fino/redis.rb",
   "lib/fino/redis/**/*",
 
   # Fino Rails
-  "lib/fino-rails.rb",
   "lib/fino/rails.rb",
-  "lib/fino/rails/**/*",
-]
+  "lib/fino/rails/**/*"
+].freeze
 
 Gem::Specification.new do |spec|
   spec.name     = "fino"
