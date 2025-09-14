@@ -19,10 +19,14 @@ class Fino::Library
     pipeline.read(build_setting_definition(setting_name, at: at))
   end
 
-  def settings(*setting_names, at: nil)
+  def settings(*setting_names, at: Fino::EMPTINESS)
     setting_definitions =
-      if setting_names.empty? && at.nil?
+      if setting_names.empty? && at.equal?(Fino::EMPTINESS)
         configuration.registry.setting_definitions
+      elsif at.equal?(Fino::EMPTINESS)
+        setting_names.map { |name| build_setting_definition(name) }
+      elsif setting_names.empty?
+        configuration.registry.setting_definitions(at: at)
       else
         setting_names.map { |name| build_setting_definition(name, at: at) }
       end
@@ -58,7 +62,7 @@ class Fino::Library
   attr_reader :configuration
 
   def build_setting_definition(setting_name, at: nil)
-    configuration.registry.fetch(setting_name.to_s, at.to_s)
+    configuration.registry.setting_definition(setting_name.to_s, at&.to_s)
   end
 
   def pipeline

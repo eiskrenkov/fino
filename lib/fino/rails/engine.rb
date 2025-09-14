@@ -9,18 +9,28 @@ class Fino::Rails::Engine < Rails::Engine
   # Engine
   #
 
-  paths["app"] << root.join("lib", "fino", "rails", "app")
-  paths["config/initializers"] << root.join("lib", "fino", "rails", "config", "initializers")
+  gem_root = root.join("lib", "fino", "rails")
+
+  paths["app"] << gem_root.join("app")
+  paths["config/initializers"] << gem_root.join("config", "initializers")
 
   initializer "fino.rails.engine.views" do |_app|
     ActiveSupport.on_load :action_controller do
-      prepend_view_path Fino::Rails::Engine.root.join("lib", "fino", "rails", "app", "views")
+      prepend_view_path gem_root.join("app", "views")
     end
   end
 
   initializer "fino.rails.engine.routes", before: :add_routing_paths do |app|
-    custom_routes = root.join("lib", "fino", "rails", "config", "routes.rb")
+    custom_routes = gem_root.join("config", "routes.rb")
     app.routes_reloader.paths << custom_routes.to_s
+  end
+
+  initializer "fino.rails.engine.assets" do
+    config.app_middleware.use(
+      Rack::Static,
+      urls: ["/fino-assets"],
+      root: gem_root.join("public").to_s
+    )
   end
 
   #

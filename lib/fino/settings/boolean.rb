@@ -9,7 +9,10 @@ class Fino::Settings::Boolean
     end
 
     def deserialize(raw_value)
-      raw_value == "1"
+      case raw_value
+      when "1", 1, true, "true", "t", "yes", "y" then true
+      else false
+      end
     end
   end
 end

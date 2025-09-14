@@ -1,0 +1,33 @@
+<div class="hidden xl:fixed xl:inset-y-0 xl:z-50 xl:flex xl:w-72 xl:flex-col">
+  <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-50 px-4 ring-1 ring-gray-200">
+    <div class="flex h-16 shrink-0 items-center">
+      <%= image_tag "/fino-assets/logo.svg", class: "h-8 w-auto", alt: "Fino" %>
+    </div>
+
+    <nav class="flex flex-1 flex-col gap-y-7">
+      <div>
+        <%= link_to root_path, class: "flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold #{current_page?(:root) ? 'text-indigo-600' : 'text-gray-700'} hover:bg-gray-100 hover:text-indigo-600" do %>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-indigo-600">
+            <path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          Dashboard
+        <% end %>
+      </div>
+
+      <div>
+        <div class="text-xs/6 font-semibold text-gray-400">Sections</div>
+        <ul role="list" class="space-y-1">
+          <% sections.each do |section_definition| %>
+            <li>
+              <%= link_to settings_section_path(section: section_definition.name || :general), class: "group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold #{current_section && (current_section.name == section_definition.name) ? 'text-indigo-600' : 'text-gray-700'} hover:bg-gray-100 hover:text-indigo-600" do %>
+                <span class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-[0.625rem] font-medium text-gray-400 group-hover:border-indigo-600 group-hover:text-indigo-600"><%= section_definition.label.first %></span>
+                <span class="break-words"><%= section_definition.label %></span>
+                <span aria-hidden="true" class="ml-auto w-9 min-w-max rounded-full bg-white px-2.5 py-0.5 text-center text-xs/5 font-medium whitespace-nowrap text-gray-600 outline-1 -outline-offset-1 outline-gray-200"><%=Fino.settings(at: section_definition.name).count %></span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </nav>
+  </div>
+</div>

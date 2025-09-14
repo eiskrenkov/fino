@@ -40,17 +40,34 @@ module Fino::Setting
     definition.key
   end
 
+  def type
+    definition.type
+  end
+
+  def type_class
+    definition.type_class
+  end
+
+  def section_definition
+    definition.section_definition
+  end
+
   def section_name
-    definition.section_name
+    definition.section_definition&.name
   end
 
   def default
     definition.default
   end
 
+  def description
+    definition.description
+  end
+
   def inspect
     attributes = [
       "key=#{key.inspect}",
+      "type=#{type_class.inspect}",
       "value=#{value.inspect}",
       "default=#{default.inspect}"
     ]

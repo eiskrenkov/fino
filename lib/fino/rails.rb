@@ -17,6 +17,12 @@ module Fino
       autoload :Pipe, "fino/rails/instrumentation/pipe"
     end
   end
+
+  module_function
+
+  def root
+    File.expand_path("rails", __dir__)
+  end
 end
 
 require "fino/rails/engine"

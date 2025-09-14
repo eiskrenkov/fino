@@ -11,6 +11,10 @@ Dir["fino-*.gemspec"].each do |file_name|
           development_group: sub_gem_name
 end
 
+# Dummy app live reload
+gem "guard-livereload"
+gem "rack-livereload"
+
 gem "puma"
 gem "rails", "~> #{ENV['RAILS_VERSION'] || '8.0'}"
 gem "sqlite3", "~> #{ENV['SQLITE_VERSION'] || '2.7'}"

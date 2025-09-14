@@ -1,0 +1,9 @@
+{
+	"dependencies": {
+		"@tailwindcss/cli": "^4.1.13",
+		"tailwindcss": "^4.1.13"
+	},
+	"scripts": {
+    "build:css": "tailwindcss -i ./lib/fino/rails/app/assets/stylesheets/fino.css -o ./lib/fino/rails/public/fino-assets/fino.css --watch --minify"
+  }
+}

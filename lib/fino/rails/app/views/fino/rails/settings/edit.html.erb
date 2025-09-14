@@ -1,179 +1,116 @@
-<% content_for(:title, "Edit #{@setting.name}") %>
-<% content_for(:head) do %>
-  <style>
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
+<% content_for(:title, @setting.key) %>
 
-    .form-label {
-      display: block;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: #0f172a;
-      margin-bottom: 0.5rem;
-    }
+<div class="m-3">
+  <div class="container mx-auto md:w-xl px-0 pt-10">
+    <div class="bg-white shadow-xs outline outline-gray-900/5 sm:rounded-xl md:col-span-2">
+      <%= form_with url: update_setting_path(section: @setting.section_name || :general, setting: @setting.name), method: :put, local: true do |f| %>
+        <div class="border-b border-gray-100 p-3 md:p-5 flex justify-between">
+          <div class="flex self-center">
+            <h3 class="text-base font-semibold text-gray-900"><%= link_to @setting.section_definition&.label || "General", settings_section_path(section: @setting.section_name || :general) %></h3>
+            <span class="mx-2 text-gray-400">/</span>
+            <h3 class="text-base font-semibold text-gray-900"><%= @setting.name %></h3>
+          </div>
 
-    .form-input {
-      display: block;
-      width: 100%;
-      padding: 0.5rem 0.75rem;
-      font-size: 0.875rem;
-      line-height: 1.5;
-      color: #0f172a;
-      background-color: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      transition: border-color 0.15s ease-in-out;
-    }
+          <div class="flex gap-3 lg:mt-0 lg:ml-4">
+            <span>
+              <%= link_to "Cancel", :back, class: "inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs inset-ring inset-ring-gray-300 hover:bg-gray-50" %>
+            </span>
 
-    .form-input:focus {
-      outline: none;
-      border-color: #0f172a;
-      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
-    }
-
-    .form-select {
-      display: block;
-      width: 100%;
-      padding: 0.5rem 0.75rem;
-      font-size: 0.875rem;
-      line-height: 1.5;
-      color: #0f172a;
-      background-color: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      transition: border-color 0.15s ease-in-out;
-    }
-
-    .form-select:focus {
-      outline: none;
-      border-color: #0f172a;
-      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
-    }
-
-    .form-checkbox {
-      width: 1rem;
-      height: 1rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 4px;
-      margin-right: 0.5rem;
-    }
-
-    .form-help {
-      font-size: 0.75rem;
-      color: #64748b;
-      margin-top: 0.25rem;
-    }
-
-    .button-group {
-      display: flex;
-      gap: 0.75rem;
-      margin-top: 2rem;
-    }
-
-    .breadcrumb {
-      margin-bottom: 1.5rem;
-      font-size: 0.875rem;
-      color: #64748b;
-    }
-
-    .breadcrumb a {
-      color: #0f172a;
-      text-decoration: none;
-    }
-
-    .breadcrumb a:hover {
-      text-decoration: underline;
-    }
-
-    .setting-info {
-      background-color: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .setting-info-title {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: #0f172a;
-    }
-
-    .setting-info-detail {
-      font-size: 0.875rem;
-      color: #64748b;
-      margin-bottom: 0.25rem;
-    }
-  </style>
-<% end %>
-
-<div class="breadcrumb">
-  <%= link_to "Settings", root_path %> / Edit <%= @setting.name %>
-</div>
-
-<div class="header">
-  <h1>Edit Setting</h1>
-  <p>Modify the configuration value for this setting</p>
-</div>
-
-<div class="card">
-  <div class="card-header">
-    <h2 class="card-title"><%= @setting.name %></h2>
-  </div>
-  <div class="card-content">
-    <div class="setting-info">
-      <div class="setting-info-title">Setting Information</div>
-      <div class="setting-info-detail"><strong>Type:</strong> <%= @setting.class.name.demodulize %></div>
-      <% if @setting.section_name %>
-        <div class="setting-info-detail"><strong>Section:</strong> <%= @setting.section_name %></div>
-      <% end %>
-      <div class="setting-info-detail"><strong>Default:</strong> <code><%= @setting.definition.default.inspect %></code></div>
-      <% if @setting.definition.options[:description].present? %>
-        <div class="setting-info-detail"><strong>Description:</strong> <%= @setting.definition.options[:description] %></div>
-      <% end %>
-    </div>
-
-    <%= form_with url: update_setting_path(@setting.key), method: :put, local: true do |f| %>
-      <div class="form-group">
-        <%= f.label :value, class: "form-label" do %>
-          Current Value
-          <% if @setting.definition.options[:description].present? %>
-            <div class="form-help"><%= @setting.definition.options[:description] %></div>
-          <% end %>
-        <% end %>
-
-        <% case @setting.class.name.demodulize.downcase %>
-        <% when 'boolean' %>
-          <%= f.check_box :value,
-                        { class: "form-checkbox", checked: @setting.value },
-                        '1',
-                        '0' %>
-        <% when 'integer' %>
-          <%= f.number_field :value,
-                            value: @setting.value,
-                            class: "form-input",
-                            step: 1 %>
-        <% when 'float' %>
-          <%= f.number_field :value,
-                            value: @setting.value,
-                            class: "form-input",
-                            step: 0.1 %>
-        <% else %>
-          <%= f.text_field :value,
-                          value: @setting.value,
-                          class: "form-input" %>
-        <% end %>
-
-        <div class="form-help">
-          Default value: <%= @setting.definition.default.inspect %>
+            <span>
+              <%= f.submit "Save", class: "inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" %>
+            </span>
+          </div>
         </div>
-      </div>
 
-      <div class="button-group">
-        <%= f.submit "Update Setting", class: "btn btn-primary" %>
-        <%= link_to "Cancel", root_path, class: "btn btn-secondary" %>
+        <div class="px-4 py-6 sm:p-6">
+          <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+            <% case @setting %>
+            <% when Fino::Settings::Boolean %>
+              <div class="col-span-full">
+                <div class="flex gap-3">
+                  <div class="flex h-6 shrink-0 items-center">
+                    <div class="group grid size-4 grid-cols-1">
+                      <%= f.check_box :value,
+                                    {
+                                      id: "value",
+                                      class: "col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto",
+                                      checked: @setting.value
+                                    },
+                                    '1',
+                                    '0' %>
+                      <svg viewBox="0 0 14 14" fill="none" class="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-disabled:stroke-gray-950/25">
+                        <path d="M3 8L6 11L11 3.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-0 group-has-checked:opacity-100" />
+                        <path d="M3 7H11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-0 group-has-indeterminate:opacity-100" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="text-sm/6">
+                    <label for="value" class="font-medium text-gray-900"><%= @setting.name %></label>
+                    <p id="comments-description" class="text-gray-500"><%= @setting.description %></p>
+                  </div>
+                </div>
+              </div>
+            <% when Fino::Settings::String %>
+              <div class="col-span-full">
+                <div>
+                  <label for="username" class="block text-sm/6 font-medium text-gray-900"><%= @setting.name %></label>
+                  <div class="mt-2">
+                    <div class="flex items-center rounded-md bg-white pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600">
+                      <%= f.text_field :value,
+                                      value: @setting.value,
+                                      class: "block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6" %>
+                    </div>
+                  </div>
+                </div>
+                <p class="mt-3 text-sm/6 text-gray-600"><%= @setting.description %></p>
+              </div>
+              <% when Fino::Settings::Integer %>
+                <div class="col-span-full">
+                  <div>
+                    <label for="username" class="block text-sm/6 font-medium text-gray-900"><%= @setting.name %></label>
+                    <div class="mt-2">
+                      <div class="flex items-center rounded-md bg-white pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600">
+                        <%= f.number_field :value,
+                                          value: @setting.value,
+                                          class: "block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6",
+                                          step: 1 %>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="mt-3 text-sm/6 text-gray-600"><%= @setting.description %></p>
+                </div>
+              <% when Fino::Settings::Float %>
+                <div class="col-span-full">
+                  <div>
+                    <label for="username" class="block text-sm/6 font-medium text-gray-900"><%= @setting.name %></label>
+                    <div class="mt-2">
+                      <div class="flex items-center rounded-md bg-white pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600">
+                        <%= f.number_field :value,
+                                          value: @setting.value,
+                                          class:"block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6",
+                                          step: 0.1 %>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="mt-3 text-sm/6 text-gray-600"><%= @setting.description %></p>
+                </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="border-t border-gray-100">
+        <dl class="divide-y divide-gray-100">
+          <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-900">Type</dt>
+            <dd class="mt-1 text-sm/6 text-gray-700 sm:col-span-1 sm:mt-0 flex"><%= setting_type_label(@setting) %></dd>
+          </div>
+          <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+            <dt class="text-sm font-medium text-gray-900">Default</dt>
+            <dd class="mt-1 text-sm/6 text-gray-700 sm:col-span-2 sm:mt-0"><%= @setting.definition.default.inspect %></dd>
+          </div>
+        </dl>
       </div>
-    <% end %>
+    </div>
   </div>
 </div>

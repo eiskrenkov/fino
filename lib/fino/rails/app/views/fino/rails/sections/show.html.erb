@@ -1,0 +1,11 @@
+<% content_for(:title, "#{current_section.label}") %>
+
+<div class="m-3">
+  <ul role="list" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <% @settings.each do |setting| %>
+      <li class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white border-1 border-gray-200">
+        <%= render "fino/rails/settings/setting", locals: { setting: setting } %>
+      </li>
+    <% end %>
+  </ul>
+</div>

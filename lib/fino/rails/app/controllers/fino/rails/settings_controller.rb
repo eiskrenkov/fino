@@ -2,19 +2,15 @@
 
 class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
   def index
-    @settings = Fino.library.settings
+    @settings = Fino.settings
   end
 
   def edit
-    setting_name, at = parse_setting_path(params[:key])
-
-    @setting = Fino.setting(setting_name, at: at)
+    @setting = Fino.setting(setting_name, at: section_name)
   end
 
   def update
-    setting_name, at = parse_setting_path(params[:key])
-
-    Fino.set(setting_name => params[:value], at: at)
+    Fino.set(setting_name => params[:value], at: section_name)
 
     redirect_to root_path, notice: "Setting updated successfully"
   rescue Fino::Registry::UnknownSetting
@@ -23,7 +19,14 @@ class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
 
   private
 
-  def parse_setting_path(key)
-    key.split("/").map(&:to_sym).reverse
+  def setting_name
+    params[:setting]
+  end
+
+  def section_name
+    case params[:section]
+    when "general" then nil
+    else params[:section]
+    end
   end
 end
