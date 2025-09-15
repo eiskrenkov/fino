@@ -75,11 +75,3 @@ end
 ```
 
 <img width="1229" height="641" alt="Screenshot 2025-09-04 at 16 01 51" src="https://github.com/user-attachments/assets/646df84c-c25b-4890-9637-c481e18c9bd4" />
-
-## TODO
-
-- Preloading settings to be able to fetch all of them in one adapter call
-- Request scoped memoization when integrating with Rails
-- Nicer UI
-- Basic validations (presence, range, numericality)
-- Enum setting type
