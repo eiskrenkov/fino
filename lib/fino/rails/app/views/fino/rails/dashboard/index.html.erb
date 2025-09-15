@@ -1,60 +1,62 @@
 <% content_for(:title, "Dashboard") %>
 
 <div class="m-3">
-  <%= render "fino/rails/common/flash"  %>
+  <div class="flex flex-col gap-y-3">
+    <%= render "fino/rails/common/flash"  %>
 
-  <% @settings.group_by { |setting| setting.definition.section_definition&.label || "General" }.each do |section_label, settings| %>
-    <div class="mb-5">
-      <h3 class="text-base font-semibold text-gray-900"><%= section_label %></h3>
+    <% @settings.group_by { |setting| setting.definition.section_definition&.label || "General" }.each do |section_label, settings| %>
+      <div class="mb-5">
+        <h3 class="text-base font-semibold text-gray-900"><%= section_label %></h3>
 
-      <ul role="list" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5 mt-2">
-        <% settings.each do |setting| %>
-          <li class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white border-1 border-gray-200">
-            <%= link_to edit_setting_path(section: setting.section_name || :general, setting: setting.name) do %>
-              <div class="flex h-full justify-between p-4 hover:bg-gray-50 transition-colors rounded-lg">
-                <div class="flex flex-col space-y-3 justify-between truncate">
-                  <div class="flex flex-col gap-1">
-                    <div class="flex flex-col-reverse items-start gap-y-1 xl:flex-row xl:items-center xl:gap-x-2">
-                      <h2 class="min-w-0 text-sm/6 font-semibold text-gray-900">
-                        <span class="whitespace-nowrap"><%= setting.name %></span>
-                      </h2>
+        <ul role="list" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5 mt-2">
+          <% settings.each do |setting| %>
+            <li class="col-span-1 divide-y divide-gray-200 rounded-lg bg-white border-1 border-gray-200">
+              <%= link_to edit_setting_path(section: setting.section_name || :general, setting: setting.name) do %>
+                <div class="flex h-full justify-between p-4 hover:bg-gray-50 transition-colors rounded-lg">
+                  <div class="flex flex-col space-y-3 justify-between truncate">
+                    <div class="flex flex-col gap-1">
+                      <div class="flex flex-col-reverse items-start gap-y-1 xl:flex-row xl:items-center xl:gap-x-2">
+                        <h2 class="min-w-0 text-sm/6 font-semibold text-gray-900">
+                          <span class="whitespace-nowrap"><%= setting.name %></span>
+                        </h2>
 
-                      <%= setting_type_label(setting) %>
-                    </div>
+                        <%= setting_type_label(setting) %>
+                      </div>
 
-                    <div>
-                      <% case setting %>
-                      <% when Fino::Settings::Boolean %>
-                        <div class="flex items-center gap-x-2">
-                          <div class="flex-none rounded-full p-1 <%= setting.value ? 'text-green-500 bg-green-100' : 'text-red-500 bg-red-100' %>">
-                            <div class="size-2 rounded-full bg-current"></div>
+                      <div>
+                        <% case setting %>
+                        <% when Fino::Settings::Boolean %>
+                          <div class="flex items-center gap-x-2">
+                            <div class="flex-none rounded-full p-1 <%= setting.value ? 'text-green-500 bg-green-100' : 'text-red-500 bg-red-100' %>">
+                              <div class="size-2 rounded-full bg-current"></div>
+                            </div>
+
+                            <span class="text-lg font-medium text-gray-800"><%= setting.value ? 'Enabled' : 'Disabled' %></span>
                           </div>
-
-                          <span class="text-lg font-medium text-gray-800"><%= setting.value ? 'Enabled' : 'Disabled' %></span>
-                        </div>
-                      <% when Fino::Settings::String %>
-                        <div class="truncate text-xl font-semibold text-gray-800">
-                          "<%= setting.value %>"
-                        </div>
-                      <% else %>
-                        <div class="truncate text-xl font-semibold text-gray-800">
-                          <%= setting.value %>
-                        </div>
-                      <% end %>
+                        <% when Fino::Settings::String %>
+                          <div class="truncate text-xl font-semibold text-gray-800">
+                            "<%= setting.value %>"
+                          </div>
+                        <% else %>
+                          <div class="truncate text-xl font-semibold text-gray-800">
+                            <%= setting.value %>
+                          </div>
+                        <% end %>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div class="flex items-center">
-                  <svg viewBox="0 0 20 20" fill="currentColor" data-slot="icon" aria-hidden="true" class="size-5 flex-none text-gray-400">
-                    <path d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" fill-rule="evenodd" />
-                  </svg>
+                  <div class="flex items-center">
+                    <svg viewBox="0 0 20 20" fill="currentColor" data-slot="icon" aria-hidden="true" class="size-5 flex-none text-gray-400">
+                      <path d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" fill-rule="evenodd" />
+                    </svg>
+                  </div>
                 </div>
-              </div>
-            <% end %>
-          </li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
 </div>
