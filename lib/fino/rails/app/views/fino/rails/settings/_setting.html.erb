@@ -1,12 +1,12 @@
 <% setting = locals.fetch(:setting) %>
 
 <%= link_to edit_setting_path(section: setting.section_name || :general, setting: setting.name) do %>
-  <div class="flex w-full h-full justify-between p-6 hover:bg-gray-50 transition-colors rounded-lg">
-    <div class="flex flex-col space-y-3 justify-between">
+  <div class="flex h-full justify-between p-6 hover:bg-gray-50 transition-colors rounded-lg">
+    <div class="flex flex-col space-y-3 justify-between truncate">
       <div class="flex flex-col gap-1">
-        <div class="flex items-center gap-x-3">
+        <div class="flex flex-col-reverse items-start gap-y-1 xl:flex-row xl:items-center xl:gap-x-2">
           <h2 class="min-w-0 text-sm/6 font-semibold text-gray-900">
-            <div class="flex gap-x-2">
+            <div class="flex gap-x-2 truncate">
               <span class="truncate"><%= setting.definition.section_definition&.label || "General" %></span>
               <span class="text-gray-500">/</span>
               <span class="whitespace-nowrap"><%= setting.name %></span>
@@ -21,7 +21,7 @@
         <% end %>
       </div>
 
-      <div class="">
+      <div>
         <% case setting %>
         <% when Fino::Settings::Boolean %>
           <div class="flex items-center gap-x-2">

@@ -1,0 +1,58 @@
+<% flash.each do |type, message| %>
+  <% color = color_for_flash_type(type.to_sym) %>
+
+  <div id="flash-<%= type %>" class="rounded-md bg-<%= color%>-50 p-4 transition-opacity duration-500 ease-out opacity-100">
+    <div class="flex">
+      <div class="shrink-0">
+        <% case type.to_sym %>
+        <% when :notice %>
+          <svg viewBox="0 0 20 20" fill="currentColor" data-slot="icon" aria-hidden="true" class="size-5 text-<%= color%>-400">
+            <path d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" fill-rule="evenodd" />
+          </svg>
+        <% when :alert %>
+          <svg viewBox="0 0 20 20" fill="currentColor" data-slot="icon" aria-hidden="true" class="size-5 text-red-400">
+            <path d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clip-rule="evenodd" fill-rule="evenodd" />
+          </svg>
+        <% end %>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm font-medium text-<%= color%>-800"><%= message %></p>
+      </div>
+      <div class="ml-auto pl-3">
+        <div class="-mx-1.5 -my-1.5">
+          <button type="button" class="flash-dismiss inline-flex rounded-md bg-<%= color%>-50 p-1.5 text-<%= color%>-500 hover:bg-<%= color%>-100 focus-visible:ring-2 focus-visible:ring-<%= color%>-600 focus-visible:ring-offset-2 focus-visible:ring-offset-<%= color%>-50 focus-visible:outline-hidden">
+            <span class="sr-only">Dismiss</span>
+            <svg viewBox="0 0 20 20" fill="currentColor" data-slot="icon" aria-hidden="true" class="size-5">
+              <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const flashElements = document.querySelectorAll('[id^="flash-"]');
+
+    flashElements.forEach(function(flashElement) {
+      const dismissButton = flashElement.querySelector('.flash-dismiss');
+
+      function dismissFlash() {
+        flashElement.classList.remove('opacity-100');
+        flashElement.classList.add('opacity-0');
+
+        setTimeout(function() {
+          flashElement.remove();
+        }, 500);
+      }
+
+      if (dismissButton) {
+        dismissButton.addEventListener('click', dismissFlash);
+      }
+
+      setTimeout(dismissFlash, 3000);
+    });
+  });
+</script>

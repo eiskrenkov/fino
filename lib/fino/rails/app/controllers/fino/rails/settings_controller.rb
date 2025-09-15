@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
+  before_action :store_return_location, only: [:edit]
+
   def index
     @settings = Fino.settings
   end
@@ -12,7 +14,7 @@ class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
   def update
     Fino.set(setting_name => params[:value], at: section_name)
 
-    redirect_to root_path, notice: "Setting updated successfully"
+    redirect_to (session.delete(:return_to) || root_path), notice: "Setting updated successfully"
   rescue Fino::Registry::UnknownSetting
     redirect_to root_path, alert: "Setting not found"
   end
@@ -28,5 +30,9 @@ class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
     when "general" then nil
     else params[:section]
     end
+  end
+
+  def store_return_location
+    session[:return_to] = request.referer
   end
 end
