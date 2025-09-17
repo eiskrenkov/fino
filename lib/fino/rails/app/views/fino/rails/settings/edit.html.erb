@@ -1,117 +1,195 @@
 <% content_for(:title, @setting.key) %>
 
-<div class="m-3">
-  <div class="container mx-auto md:w-xl px-0 pt-10">
-    <div class="flex flex-col gap-3">
-      <%= render "fino/rails/common/flash" %>
+<div class="p-3">
+  <div class="container mx-auto">
+    <%= form_with url: update_setting_path(section: @setting.section_name || :general, setting: @setting.name), method: :put, local: true do |f| %>
+      <div class="border-b border-gray-200 pb-3 sm:flex sm:items-center sm:justify-between">
+        <h3 class="text-base font-semibold text-gray-900">
+          <%= link_to @setting.section_definition&.label || "General", settings_section_path(section: @setting.section_name || :general), class: "hover:text-gray-700" %>
+          <span class="mx-2 text-gray-400">/</span>
+          <%= @setting.name %>
+        </h3>
 
-      <div class="bg-white shadow-xs outline outline-gray-900/5 sm:rounded-xl md:col-span-2">
-        <%= form_with url: update_setting_path(section: @setting.section_name || :general, setting: @setting.name), method: :put, local: true do |f| %>
-          <div class="border-b border-gray-100 p-3 md:p-5 flex justify-between">
-            <div class="flex self-center">
-              <h3 class="text-base font-semibold text-gray-900"><%= link_to @setting.section_definition&.label || "General", settings_section_path(section: @setting.section_name || :general) %></h3>
-              <span class="mx-2 text-gray-400">/</span>
-              <h3 class="text-base font-semibold text-gray-900"><%= @setting.name %></h3>
-            </div>
-
-            <div class="flex gap-3 lg:mt-0 lg:ml-4">
-              <span>
-                <%= link_to "Cancel", :back, class: "inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs inset-ring inset-ring-gray-300 hover:bg-gray-50" %>
-              </span>
-
-              <span>
-                <%= f.submit "Save", class: "inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" %>
-              </span>
-            </div>
-          </div>
-
-          <div class="px-4 py-6 sm:p-6">
-            <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-              <% case @setting %>
-              <% when Fino::Settings::Boolean %>
-                <div class="col-span-full">
-                  <div class="flex gap-3">
-                    <div class="flex h-6 shrink-0 items-center pt-3">
-                      <div class="group relative inline-flex w-11 shrink-0 rounded-full bg-gray-200 p-0.5 inset-ring inset-ring-gray-900/5 outline-offset-2 outline-indigo-600 transition-colors duration-200 ease-in-out has-checked:bg-indigo-600 has-focus-visible:outline-2">
-                        <span class="size-5 rounded-full bg-white shadow-xs ring-1 ring-gray-900/5 transition-transform duration-200 ease-in-out group-has-checked:translate-x-5"></span>
-                        <%= f.check_box :value,
-                                      {
-                                        id: "value",
-                                        class: "absolute inset-0 appearance-none focus:outline-hidden",
-                                        checked: @setting.value
-                                      },
-                                      '1',
-                                      '0' %>
-                      </div>
-                    </div>
-                    <div class="text-sm/6">
-                      <label for="value" class="font-medium text-gray-900"><%= @setting.name %></label>
-                      <p id="comments-description" class="text-gray-500"><%= @setting.description %></p>
-                    </div>
-                  </div>
-                </div>
-              <% when Fino::Settings::String %>
-                <div class="col-span-full">
-                  <div>
-                    <label for="username" class="block text-sm/6 font-medium text-gray-900"><%= @setting.name %></label>
-                    <div class="mt-2">
-                      <div class="flex items-center rounded-md bg-white pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600">
-                        <%= f.text_field :value,
-                                        value: @setting.value,
-                                        class: "block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6" %>
-                      </div>
-                    </div>
-                  </div>
-                  <p class="mt-3 text-sm/6 text-gray-600"><%= @setting.description %></p>
-                </div>
-                <% when Fino::Settings::Integer %>
-                  <div class="col-span-full">
-                    <div>
-                      <label for="username" class="block text-sm/6 font-medium text-gray-900"><%= @setting.name %></label>
-                      <div class="mt-2">
-                        <div class="flex items-center rounded-md bg-white pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600">
-                          <%= f.number_field :value,
-                                            value: @setting.value,
-                                            class: "block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6",
-                                            step: 1 %>
-                        </div>
-                      </div>
-                    </div>
-                    <p class="mt-3 text-sm/6 text-gray-600"><%= @setting.description %></p>
-                  </div>
-                <% when Fino::Settings::Float %>
-                  <div class="col-span-full">
-                    <div>
-                      <label for="username" class="block text-sm/6 font-medium text-gray-900"><%= @setting.name %></label>
-                      <div class="mt-2">
-                        <div class="flex items-center rounded-md bg-white pl-3 outline-1 -outline-offset-1 outline-gray-300 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-600">
-                          <%= f.number_field :value,
-                                            value: @setting.value,
-                                            class:"block min-w-0 grow bg-white py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6",
-                                            step: 0.1 %>
-                        </div>
-                      </div>
-                    </div>
-                    <p class="mt-3 text-sm/6 text-gray-600"><%= @setting.description %></p>
-                  </div>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-
-        <div class="border-t border-gray-100">
-          <dl class="divide-y divide-gray-100">
-            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-900">Type</dt>
-              <dd class="mt-1 text-sm/6 text-gray-700 sm:col-span-1 sm:mt-0 flex"><%= setting_type_label(@setting) %></dd>
-            </div>
-            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-900">Default</dt>
-              <dd class="mt-1 text-sm/6 text-gray-700 sm:col-span-2 sm:mt-0"><%= @setting.definition.default.inspect %></dd>
-            </div>
-          </dl>
+        <div class="mt-3 flex gap-2 sm:mt-0 sm:ml-4">
+          <%= link_to "Cancel", :back, class: "inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs inset-ring inset-ring-gray-300 hover:bg-gray-50" %>
+          <%= f.submit "Save", class: "rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" %>
         </div>
       </div>
-    </div>
+
+      <div class="flex flex-col gap-2 pt-3">
+        <%= render "fino/rails/common/flash" %>
+
+        <div class="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3">
+          <div class="px-4 sm:px-0">
+            <h3 class="text-base/7 font-semibold text-gray-900">Global</h3>
+            <p class="mt-1 text-sm/6 text-gray-600">Default value that applies to all scopes unless overridden</p>
+          </div>
+
+          <div class="bg-white shadow-xs outline outline-gray-900/5 sm:rounded-xl md:col-span-2">
+            <div class="px-4 py-6 sm:p-6">
+              <div class="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                <div class="col-span-full">
+                  <%= render "fino/rails/settings/setting_input",
+                            form: f,
+                            setting: @setting,
+                            field_name: :value,
+                            field_id: "value",
+                            field_name_attr: nil,
+                            field_value: @setting.value %>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-gray-100">
+              <dl class="divide-y divide-gray-100">
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt class="text-sm font-medium text-gray-900">Type</dt>
+                  <dd class="mt-1 text-sm/6 text-gray-700 sm:col-span-1 sm:mt-0 flex"><%= setting_type_label(@setting) %></dd>
+                </div>
+                <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt class="text-sm font-medium text-gray-900">Default</dt>
+                  <dd class="mt-1 text-sm/6 text-gray-700 sm:col-span-2 sm:mt-0"><%= @setting.definition.default.inspect %></dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+
+          <div class="px-4 sm:px-0">
+            <h3 class="text-base/7 font-semibold text-gray-900">Scope Overrides</h3>
+            <p class="mt-1 text-sm/6 text-gray-600">Override the setting value for specific scopes</p>
+          </div>
+
+          <div class="bg-white shadow-xs outline outline-gray-900/5 sm:rounded-xl md:col-span-2">
+            <div class="px-4 py-6 sm:p-6">
+              <div id="scope-overrides">
+                <%= f.fields_for :overrides do |override_form| %>
+                  <% @setting.scope_overrides.each_with_index do |(scope, value), index| %>
+                    <div class="scope-override-item mb-6 last:mb-0" data-index="<%= index %>">
+                      <div class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6">
+                        <div class="sm:col-span-2">
+                          <%= override_form.label "scope_#{index}", "Scope", class: "block text-sm/6 font-medium text-gray-900" %>
+                          <div class="mt-2">
+                            <%= override_form.text_field "scope_#{index}",
+                                                      value: scope,
+                                                      name: "overrides[#{index}][scope]",
+                                                      class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6",
+                                                      placeholder: "e.g., qa, admin" %>
+                          </div>
+                        </div>
+
+                        <div class="sm:col-span-3">
+                          <%= override_form.label "value_#{index}", "Value", class: "block text-sm/6 font-medium text-gray-900" %>
+                          <div class="mt-2">
+                            <%= render "fino/rails/settings/types/#{@setting.type}",
+                                      form: override_form,
+                                      setting: @setting,
+                                      field_name: "value_#{index}",
+                                      field_id: "overrides_#{index}_value",
+                                      field_name_attr: "overrides[#{index}][value]",
+                                      field_value: value,
+                                      wrapper_class: "",
+                                      input_class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" %>
+                          </div>
+                        </div>
+
+                        <div class="sm:col-span-1 flex items-end">
+                          <%= button_tag "Remove", type: "button", class: "remove-override rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600" %>
+                        </div>
+                      </div>
+                    </div>
+                  <% end %>
+                <% end %>
+
+                <% if @setting.scope_overrides.empty? %>
+                  <div class="text-center py-6">
+                    <p class="text-sm text-gray-500">No scope overrides configured</p>
+                  </div>
+                <% end %>
+              </div>
+
+              <div class="mt-6">
+                <%= button_tag "Add Override", type: "button", id: "add-override", class: "rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" %>
+              </div>
+            </div>
+          </div>
+
+          <div id="override-templates" style="display: none;">
+            <%= f.fields_for :template do |template_form| %>
+              <%= render "fino/rails/settings/types/#{@setting.type}",
+                        form: template_form,
+                        setting: @setting,
+                        field_name: "value_TEMPLATE_INDEX",
+                        field_id: "overrides_TEMPLATE_INDEX_value",
+                        field_name_attr: "overrides[TEMPLATE_INDEX][value]",
+                        field_value: nil,
+                        wrapper_class: "",
+                        input_class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const addButton = document.getElementById('add-override');
+  const overridesContainer = document.getElementById('scope-overrides');
+  const templateContainer = document.getElementById('override-templates');
+  let overrideIndex = <%= @setting.scope_overrides.length %>;
+
+  addButton.addEventListener('click', function() {
+    // Get the template HTML and replace placeholders with actual index
+    let valueInputTemplate = templateContainer.innerHTML
+      .replace(/TEMPLATE_INDEX/g, overrideIndex)
+      .replace(/value_\d+/g, `value_${overrideIndex}`)
+      .trim();
+
+    const template = `
+      <div class="scope-override-item mb-6" data-index="${overrideIndex}">
+        <div class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6">
+          <div class="sm:col-span-2">
+            <label for="overrides_${overrideIndex}_scope" class="block text-sm/6 font-medium text-gray-900">Scope</label>
+            <div class="mt-2">
+              <input type="text" name="overrides[${overrideIndex}][scope]" id="overrides_${overrideIndex}_scope" class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" placeholder="e.g., qa, admin" />
+            </div>
+          </div>
+
+          <div class="sm:col-span-3">
+            <label for="overrides_${overrideIndex}_value" class="block text-sm/6 font-medium text-gray-900">Value</label>
+            <div class="mt-2">
+              ${valueInputTemplate}
+            </div>
+          </div>
+
+          <div class="sm:col-span-1 flex items-end">
+            <button type="button" class="remove-override rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Remove</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Remove "no overrides" message if it exists
+    const noOverridesMsg = overridesContainer.querySelector('.text-center');
+    if (noOverridesMsg) {
+      noOverridesMsg.remove();
+    }
+
+    overridesContainer.insertAdjacentHTML('beforeend', template);
+    overrideIndex++;
+  });
+
+  // Handle remove buttons
+  overridesContainer.addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-override')) {
+      e.target.closest('.scope-override-item').remove();
+
+      // Show "no overrides" message if all removed
+      if (!overridesContainer.querySelector('.scope-override-item')) {
+        overridesContainer.innerHTML = '<div class="text-center py-6"><p class="text-sm text-gray-500">No scope overrides configured.</p></div>';
+      }
+    }
+  });
+});
+</script>

@@ -48,6 +48,10 @@ class Fino::Cache::Memory
     expire_if_needed
   end
 
+  def delete(key)
+    hash.delete(key)
+  end
+
   private
 
   attr_reader :hash, :expirator

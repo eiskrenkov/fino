@@ -1,0 +1,31 @@
+<% if setting.type == :boolean %>
+  <div class="flex gap-3">
+    <div class="flex h-6 shrink-0 items-center pt-3">
+      <%= render "fino/rails/settings/types/#{setting.type}",
+                 form: form,
+                 setting: setting,
+                 field_name: field_name,
+                 field_id: field_id,
+                 field_name_attr: field_name_attr,
+                 field_value: field_value %>
+    </div>
+    <div class="text-sm/6">
+      <label for="<%= field_id %>" class="font-medium text-gray-900"><%= setting.name %></label>
+      <p class="text-gray-500"><%= setting.description %></p>
+    </div>
+  </div>
+<% else %>
+  <div>
+    <label for="<%= field_id %>" class="block text-sm/6 font-medium text-gray-900"><%= setting.name %></label>
+    <div class="mt-2">
+      <%= render "fino/rails/settings/types/#{setting.type}",
+                 form: form,
+                 setting: setting,
+                 field_name: field_name,
+                 field_id: field_id,
+                 field_name_attr: field_name_attr,
+                 field_value: field_value %>
+    </div>
+  </div>
+  <p class="mt-3 text-sm/6 text-gray-600"><%= setting.description %></p>
+<% end %>

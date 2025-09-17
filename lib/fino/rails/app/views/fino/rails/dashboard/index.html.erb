@@ -1,6 +1,10 @@
 <% content_for(:title, "Dashboard") %>
 
-<div class="m-3">
+<% content_for(:topbar) do %>
+  <%= render "fino/rails/common/topbar" %>
+<% end %>
+
+<div class="p-3">
   <div class="flex flex-col gap-y-3">
     <%= render "fino/rails/common/flash"  %>
 
@@ -27,11 +31,13 @@
                         <% case setting %>
                         <% when Fino::Settings::Boolean %>
                           <div class="flex items-center gap-x-2">
-                            <div class="flex-none rounded-full p-1 <%= setting.value ? 'text-green-500 bg-green-100' : 'text-red-500 bg-red-100' %>">
+                            <% status = boolean_setting_status(setting) %>
+
+                            <div class="flex-none rounded-full p-1 <%= "text-#{status[:color]}-500 bg-#{status[:color]}-100" %>">
                               <div class="size-2 rounded-full bg-current"></div>
                             </div>
 
-                            <span class="text-lg font-medium text-gray-800"><%= setting.value ? 'Enabled' : 'Disabled' %></span>
+                            <span class="text-lg font-medium text-gray-800"><%= status[:short_text] || status[:text] %></span>
                           </div>
                         <% when Fino::Settings::String %>
                           <div class="truncate text-xl font-semibold text-gray-800">

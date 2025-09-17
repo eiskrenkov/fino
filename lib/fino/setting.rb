@@ -14,22 +14,24 @@ module Fino::Setting
       raise NotImplementedError
     end
 
-    def build(setting_definition, raw_value, *options)
+    def build(setting_definition, raw_value, scoped_raw_values)
+      value = raw_value.equal?(Fino::EMPTINESS) ? setting_definition.options[:default] : deserialize(raw_value)
+      scoped_values = scoped_raw_values.transform_values { |v| deserialize(v) }
+
       new(
         setting_definition,
-        raw_value.equal?(Fino::EMPTINESS) ? setting_definition.options[:default] : deserialize(raw_value),
-        *options
+        value,
+        scoped_values
       )
     end
   end
 
-  attr_reader :definition, :value
+  attr_reader :definition
 
-  def initialize(definition, value, **options)
+  def initialize(definition, value, scoped_values = {})
     @definition = definition
     @value = value
-
-    @options = options
+    @scoped_values = scoped_values
   end
 
   def name
@@ -38,6 +40,18 @@ module Fino::Setting
 
   def key
     definition.key
+  end
+
+  def value(scope: nil)
+    scope ? scoped_values.fetch(scope.to_s, @value) : @value
+  end
+
+  def overriden_scopes
+    scoped_values.keys
+  end
+
+  def scope_overrides
+    scoped_values
   end
 
   def type
@@ -74,4 +88,8 @@ module Fino::Setting
 
     "#<#{self.class.name} #{attributes.join(', ')}>"
   end
+
+  private
+
+  attr_reader :scoped_values
 end

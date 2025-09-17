@@ -7,12 +7,12 @@ class Fino::Library
     @configuration = configuration
   end
 
-  def value(setting_name, at: nil)
-    setting(setting_name, at: at).value
+  def value(setting_name, at: nil, **context)
+    setting(setting_name, at: at).value(**context)
   end
 
-  def values(*setting_names, at: nil)
-    settings(*setting_names, at: at).map(&:value)
+  def values(*setting_names, at: nil, **context)
+    settings(*setting_names, at: at).map { |s| s.value(**context) }
   end
 
   def setting(setting_name, at: nil)
@@ -37,12 +37,16 @@ class Fino::Library
   def set(**setting_names_to_values)
     at = setting_names_to_values.delete(:at)
 
+    scope = setting_names_to_values.delete(:scope)
+    context = { scope: scope }.compact
+
     setting_names_to_values.each do |setting_name, value|
       setting_definition = build_setting_definition(setting_name, at: at)
 
       pipeline.write(
         setting_definition,
-        setting_definition.type_class.deserialize(value)
+        setting_definition.type_class.deserialize(value),
+        **context
       )
     end
   end

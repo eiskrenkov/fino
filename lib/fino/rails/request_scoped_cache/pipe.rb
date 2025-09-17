@@ -24,13 +24,10 @@ class Fino::Rails::RequestScopedCache::Pipe
     end
   end
 
-  def write(setting_definition, value)
-    pipe.write(setting_definition, value)
+  def write(setting_definition, value, **context)
+    pipe.write(setting_definition, value, **context)
 
-    cache.write(
-      setting_definition.key,
-      setting_definition.type_class.build(setting_definition, value)
-    )
+    cache.delete(setting_definition.key)
   end
 
   private

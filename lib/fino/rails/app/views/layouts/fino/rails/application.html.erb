@@ -16,7 +16,7 @@
     <%= render "fino/rails/common/sidebar" %>
 
     <div class="xl:pl-72">
-      <%= render "fino/rails/common/navbar" %>
+      <%= yield(:topbar) %>
 
       <main>
         <%= yield %>

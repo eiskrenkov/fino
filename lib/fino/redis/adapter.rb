@@ -15,8 +15,12 @@ class Fino::Redis::Adapter
     redis.hgetall(redis_key_for(setting_definition))
   end
 
-  def write(setting_definition, value)
-    redis.hset(redis_key_for(setting_definition), VALUE_KEY, setting_definition.type_class.serialize(value))
+  def write(setting_definition, value, **context)
+    key = redis_key_for(setting_definition)
+    hash_key = redis_hash_value_key_for(context)
+    value = setting_definition.type_class.serialize(value)
+
+    redis.hset(key, hash_key, value)
   end
 
   def read_multi(setting_definitions)
@@ -31,9 +35,22 @@ class Fino::Redis::Adapter
     raw_adapter_data.key?(VALUE_KEY) ? raw_adapter_data.delete(VALUE_KEY) : Fino::EMPTINESS
   end
 
+  def fetch_scoped_values_from(raw_adapter_data)
+    raw_adapter_data.each_with_object({}) do |(key, value), memo|
+      next unless key.start_with?("s/")
+
+      scope = key.split("/", 3)[1]
+      memo[scope] = value
+    end
+  end
+
   private
 
   attr_reader :redis, :redis_namespace
+
+  def redis_hash_value_key_for(context)
+    context[:scope] ? "s/#{context[:scope]}/#{VALUE_KEY}" : VALUE_KEY
+  end
 
   def redis_key_for(setting_definition)
     "#{redis_namespace}:#{setting_definition.path.join(':')}"
