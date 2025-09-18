@@ -15,9 +15,13 @@ class Fino::VariantPicker
     random = Zlib.crc32("#{setting.key}#{scope}") % (100 * SCALING_FACTOR)
     cumulative = 0
 
-    setting.variants.sort_by(&:percentage).find do |variant|
+    picked_variant = setting.variants.sort_by(&:percentage).find do |variant|
       cumulative += variant.percentage * SCALING_FACTOR
       random <= cumulative
     end
+
+    Fino.logger.debug { "Variant picked: #{picked_variant}" }
+
+    picked_variant
   end
 end

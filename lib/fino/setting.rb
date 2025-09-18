@@ -14,27 +14,33 @@ module Fino::Setting
       raise NotImplementedError
     end
 
-    def build(setting_definition, raw_value, scoped_raw_values, variant_raw_values)
+    def build(setting_definition, raw_value, scoped_raw_values, raw_variants)
       value = raw_value.equal?(Fino::EMPTINESS) ? setting_definition.options[:default] : deserialize(raw_value)
       scoped_values = scoped_raw_values.transform_values { |v| deserialize(v) }
-      variant_values = variant_raw_values.transform_values { |v| deserialize(v) }
+
+      variants = raw_variants.map do |raw_variant|
+        Fino::Variant.new(
+          raw_variant.fetch(:percentage),
+          deserialize(raw_variant.fetch(:value))
+        )
+      end
 
       new(
         setting_definition,
         value,
         scoped_values,
-        variant_values
+        variants
       )
     end
   end
 
-  attr_reader :definition
+  attr_reader :definition, :variants
 
-  def initialize(definition, value, scoped_values = {}, variant_values = {})
+  def initialize(definition, value, scoped_values = {}, variants = [])
     @definition = definition
     @value = value
     @scoped_values = scoped_values
-    @variant_values = variant_values
+    @variants = variants
   end
 
   def name
@@ -49,12 +55,14 @@ module Fino::Setting
     return @value unless (scope = context[:for])
 
     scoped_values.fetch(scope.to_s) do
-      return @value if @variant_values.empty?
+      return @value if variants.empty?
 
       variant = variant(for: scope)
-      Fino.logger.debug { "Variant picked: #{variant}" }
+      result = variant_id_to_value.fetch(variant.id, @value)
 
-      variant_id_to_value.fetch(variant.id, @value)
+      return @value if result == Fino::Variant::CONTROL
+
+      result
     end
   end
 
@@ -64,12 +72,10 @@ module Fino::Setting
     )
   end
 
-  def variants
-    @variant_values.keys
-  end
-
   def variant_id_to_value
-    @variant_id_to_value ||= @variant_values.transform_keys(&:id)
+    @variant_id_to_value ||= variants.each_with_object({}) do |variant, memo|
+      memo[variant.id] = variant.value
+    end
   end
 
   def overriden_scopes
@@ -110,7 +116,7 @@ module Fino::Setting
       "type=#{type_class.inspect}",
       "value=#{value.inspect}",
       "overrides=#{@scoped_values.inspect}",
-      "variants=#{@variant_values.inspect}",
+      "variants=#{variants.inspect}",
       "default=#{default.inspect}"
     ]
 

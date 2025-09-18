@@ -3,6 +3,8 @@
 class Fino::Redis::Adapter
   include Fino::Adapter
 
+  using Fino::CustomRedisScripts
+
   DEFAULT_REDIS_NAMESPACE = "fino"
   SCOPE_PREFIX = "s"
   VARIANT_PREFIX = "v"
@@ -17,22 +19,21 @@ class Fino::Redis::Adapter
     redis.hgetall(redis_key_for(setting_definition))
   end
 
-  def write(setting_definition, value, **context)
-    key = redis_key_for(setting_definition)
-    hash_key = redis_hash_value_key_for(context)
-    value = setting_definition.type_class.serialize(value)
+  def write(setting_definition, value, overrides, variants)
+    serialize_value = ->(raw_value) { setting_definition.type_class.serialize(raw_value) }
 
-    redis.hset(key, hash_key, value)
-  end
+    hash = { VALUE_KEY => serialize_value.call(value) }
 
-  def write_variants(setting_definition, variants_to_values)
-    key = redis_key_for(setting_definition)
-
-    variants_hash = variants_to_values.each_with_object({}) do |(variant, value), memo|
-      memo["#{VARIANT_PREFIX}/#{variant.id}/#{variant.percentage}/#{VALUE_KEY}"] = value.to_s
+    overrides.each do |scope, value|
+      hash["#{SCOPE_PREFIX}/#{scope}/#{VALUE_KEY}"] = serialize_value.call(value)
     end
 
-    redis.mapped_hmset(key, variants_hash)
+    variants.each do |variant|
+      value = variant.value == Fino::Variant::CONTROL ? "control" : serialize_value.call(variant.value)
+      hash["#{VARIANT_PREFIX}/#{variant.percentage}/#{VALUE_KEY}"] = value
+    end
+
+    redis.mapped_hreplace(redis_key_for(setting_definition), hash)
   end
 
   def read_multi(setting_definitions)
@@ -56,22 +57,20 @@ class Fino::Redis::Adapter
     end
   end
 
-  def fetch_variant_values_from(raw_adapter_data)
-    raw_adapter_data.each_with_object({}) do |(key, value), memo|
+  def fetch_raw_variants_from(raw_adapter_data)
+    raw_adapter_data.each_with_object([]) do |(key, value), memo|
       next unless key.start_with?("#{VARIANT_PREFIX}/")
 
-      id, percentage = key.split("/", 4)[1..2]
-      memo[Fino::Variant.new(id, percentage.to_f)] = value
+      percentage = key.split("/", 3)[1]
+      final_value = value == "control" ? Fino::Variant::CONTROL : value
+
+      memo << { percentage: percentage.to_f, value: final_value }
     end
   end
 
   private
 
   attr_reader :redis, :redis_namespace
-
-  def redis_hash_value_key_for(context)
-    context[:scope] ? "#{SCOPE_PREFIX}/#{context[:scope]}/#{VALUE_KEY}" : VALUE_KEY
-  end
 
   def redis_key_for(setting_definition)
     "#{redis_namespace}:#{setting_definition.path.join(':')}"

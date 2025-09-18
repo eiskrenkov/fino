@@ -40,21 +40,29 @@ class Fino::Library
     )
   end
 
-  def set(**setting_names_to_values)
-    at = setting_names_to_values.delete(:at)
+  def set(**data)
+    at = data.delete(:at)
+    raw_overrides = data.delete(:overrides) || {}
+    raw_variants = data.delete(:variants) || {}
 
-    scope = setting_names_to_values.delete(:scope)
-    context = { scope: scope }.compact
+    setting_name, raw_value = data.first
+    setting_definition = build_setting_definition(setting_name, at: at)
+    value = setting_definition.type_class.deserialize(raw_value)
 
-    setting_names_to_values.each do |setting_name, value|
-      setting_definition = build_setting_definition(setting_name, at: at)
-
-      pipeline.write(
-        setting_definition,
-        setting_definition.type_class.deserialize(value),
-        **context
-      )
+    variants = raw_variants.map do |percentage, value|
+      Fino::Variant.new(percentage, setting_definition.type_class.deserialize(value))
     end
+
+    variants.prepend(
+      Fino::Variant.new(100.0 - variants.sum(&:percentage), Fino::Variant::CONTROL)
+    )
+
+    pipeline.write(
+      setting_definition,
+      value,
+      raw_overrides.transform_values { |v| setting_definition.type_class.deserialize(v) },
+      variants
+    )
   end
 
   def slice(**mapping)
