@@ -34,6 +34,12 @@ class Fino::Library
     pipeline.read_multi(setting_definitions)
   end
 
+  def variant(setting_name, at: nil, for:)
+    setting(setting_name, at: at).variant(
+      for: binding.local_variable_get(:for)
+    )
+  end
+
   def set(**setting_names_to_values)
     at = setting_names_to_values.delete(:at)
 
@@ -59,6 +65,11 @@ class Fino::Library
     end
 
     pipeline.read_multi(setting_definitions)
+  end
+
+  def set_variants(setting_name, at: nil, variants:)
+    setting_definition = build_setting_definition(setting_name, at: at)
+    pipeline.write_variants(setting_definition, variants)
   end
 
   private

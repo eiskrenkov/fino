@@ -4,6 +4,8 @@ class Fino::Redis::Adapter
   include Fino::Adapter
 
   DEFAULT_REDIS_NAMESPACE = "fino"
+  SCOPE_PREFIX = "s"
+  VARIANT_PREFIX = "v"
   VALUE_KEY = "v"
 
   def initialize(redis, namespace: DEFAULT_REDIS_NAMESPACE)
@@ -23,6 +25,16 @@ class Fino::Redis::Adapter
     redis.hset(key, hash_key, value)
   end
 
+  def write_variants(setting_definition, variants_to_values)
+    key = redis_key_for(setting_definition)
+
+    variants_hash = variants_to_values.each_with_object({}) do |(variant, value), memo|
+      memo["#{VARIANT_PREFIX}/#{variant.id}/#{variant.percentage}/#{VALUE_KEY}"] = value.to_s
+    end
+
+    redis.mapped_hmset(key, variants_hash)
+  end
+
   def read_multi(setting_definitions)
     keys = setting_definitions.map { |definition| redis_key_for(definition) }
 
@@ -37,10 +49,19 @@ class Fino::Redis::Adapter
 
   def fetch_scoped_values_from(raw_adapter_data)
     raw_adapter_data.each_with_object({}) do |(key, value), memo|
-      next unless key.start_with?("s/")
+      next unless key.start_with?("#{SCOPE_PREFIX}/")
 
       scope = key.split("/", 3)[1]
       memo[scope] = value
+    end
+  end
+
+  def fetch_variant_values_from(raw_adapter_data)
+    raw_adapter_data.each_with_object({}) do |(key, value), memo|
+      next unless key.start_with?("#{VARIANT_PREFIX}/")
+
+      id, percentage = key.split("/", 4)[1..2]
+      memo[Fino::Variant.new(id, percentage.to_f)] = value
     end
   end
 
@@ -49,7 +70,7 @@ class Fino::Redis::Adapter
   attr_reader :redis, :redis_namespace
 
   def redis_hash_value_key_for(context)
-    context[:scope] ? "s/#{context[:scope]}/#{VALUE_KEY}" : VALUE_KEY
+    context[:scope] ? "#{SCOPE_PREFIX}/#{context[:scope]}/#{VALUE_KEY}" : VALUE_KEY
   end
 
   def redis_key_for(setting_definition)

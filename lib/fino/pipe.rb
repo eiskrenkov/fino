@@ -17,6 +17,10 @@ module Fino::Pipe
     raise NotImplementedError
   end
 
+  def write_variants(setting_definition, variants)
+    raise NotImplementedError
+  end
+
   private
 
   attr_reader :pipe

@@ -21,6 +21,10 @@ class Fino::Pipe::Storage
     adapter.write(setting_definition, value, **context)
   end
 
+  def write_variants(setting_definition, variants_to_values)
+    adapter.write_variants(setting_definition, variants_to_values)
+  end
+
   private
 
   attr_reader :adapter
@@ -28,11 +32,13 @@ class Fino::Pipe::Storage
   def to_setting(setting_definition, raw_adapter_data)
     raw_value = adapter.fetch_value_from(raw_adapter_data)
     scoped_raw_values = adapter.fetch_scoped_values_from(raw_adapter_data)
+    variant_raw_values = adapter.fetch_variant_values_from(raw_adapter_data)
 
     setting_definition.type_class.build(
       setting_definition,
       raw_value,
-      scoped_raw_values
+      scoped_raw_values,
+      variant_raw_values
     )
   end
 end

@@ -25,7 +25,9 @@ module Fino
                    :setting,
                    :settings,
                    :slice,
-                   :set
+                   :set,
+                   :define_variants,
+                   :variant
 
     module_function
 
