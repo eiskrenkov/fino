@@ -3,7 +3,9 @@
 require "fino-redis"
 
 Rails.application.configure do
+  config.fino.cache_within_request = false
   config.fino.preload_before_request = true
+  config.fino.instrument = false
 end
 
 Fino.configure do
@@ -14,7 +16,7 @@ Fino.configure do
     )
   end
 
-  cache { Fino::Cache::Memory.new(expires_in: 3.seconds) }
+  # cache { Fino::Cache::Memory.new(expires_in: 3.seconds) }
 
   settings do
     setting :maintenance_mode,

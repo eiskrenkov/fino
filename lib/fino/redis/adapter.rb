@@ -3,7 +3,11 @@
 class Fino::Redis::Adapter
   include Fino::Adapter
 
+  using Fino::CustomRedisScripts
+
   DEFAULT_REDIS_NAMESPACE = "fino"
+  SCOPE_PREFIX = "s"
+  VARIANT_PREFIX = "v"
   VALUE_KEY = "v"
 
   def initialize(redis, namespace: DEFAULT_REDIS_NAMESPACE)
@@ -15,12 +19,22 @@ class Fino::Redis::Adapter
     redis.hgetall(redis_key_for(setting_definition))
   end
 
-  def write(setting_definition, value, **context)
-    key = redis_key_for(setting_definition)
-    hash_key = redis_hash_value_key_for(context)
-    value = setting_definition.type_class.serialize(value)
+  def write(setting_definition, value, overrides, variants)
+    serialize_value = ->(raw_value) { setting_definition.type_class.serialize(raw_value) }
 
-    redis.hset(key, hash_key, value)
+    hash = { VALUE_KEY => serialize_value.call(value) }
+
+    overrides.each do |scope, value|
+      hash["#{SCOPE_PREFIX}/#{scope}/#{VALUE_KEY}"] = serialize_value.call(value)
+    end
+
+    variants.each do |variant|
+      next if variant.value == Fino::Variant::CONTROL
+
+      hash["#{VARIANT_PREFIX}/#{variant.percentage}/#{VALUE_KEY}"] = serialize_value.call(variant.value)
+    end
+
+    redis.mapped_hreplace(redis_key_for(setting_definition), hash)
   end
 
   def read_multi(setting_definitions)
@@ -37,20 +51,26 @@ class Fino::Redis::Adapter
 
   def fetch_scoped_values_from(raw_adapter_data)
     raw_adapter_data.each_with_object({}) do |(key, value), memo|
-      next unless key.start_with?("s/")
+      next unless key.start_with?("#{SCOPE_PREFIX}/")
 
       scope = key.split("/", 3)[1]
       memo[scope] = value
     end
   end
 
+  def fetch_raw_variants_from(raw_adapter_data)
+    raw_adapter_data.each_with_object([]) do |(key, value), memo|
+      next unless key.start_with?("#{VARIANT_PREFIX}/")
+
+      percentage = key.split("/", 3)[1]
+
+      memo << { percentage: percentage.to_f, value: value }
+    end
+  end
+
   private
 
   attr_reader :redis, :redis_namespace
-
-  def redis_hash_value_key_for(context)
-    context[:scope] ? "s/#{context[:scope]}/#{VALUE_KEY}" : VALUE_KEY
-  end
 
   def redis_key_for(setting_definition)
     "#{redis_namespace}:#{setting_definition.path.join(':')}"

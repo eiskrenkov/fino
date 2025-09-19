@@ -12,9 +12,12 @@ class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
   end
 
   def update
-    Fino.set(setting_name => params[:value], at: section_name)
-
-    process_scope_overrides(params[:overrides]) if params[:overrides].present?
+    Fino.set(
+      setting_name => params[:value],
+      at: section_name,
+      overrides: overrides,
+      variants: variants
+    )
 
     redirect_to return_path, notice: "Setting updated successfully"
   rescue StandardError => e
@@ -38,15 +41,18 @@ class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
     end
   end
 
-  def process_scope_overrides(overrides_params)
-    overrides_params.each_value do |override_data|
-      scope = override_data[:scope]
-      value = override_data[:value]
+  def overrides
+    params[:overrides].values.each_with_object({}) do |raw_override, memo|
+      memo[raw_override[:scope]] = raw_override[:value] if raw_override[:scope]
+    end
+  end
 
-      next if scope.blank?
-      next if value.nil? || (value.is_a?(String) && value.empty?)
+  def variants
+    params[:variants].values.each_with_object({}).with_index do |(raw_variant, memo), index|
+      next if index.zero?
+      next unless raw_variant[:percentage].to_f > 0.0
 
-      Fino.set(setting_name => value, scope: scope.to_sym, at: section_name)
+      memo[raw_variant[:percentage].to_f] = raw_variant[:value]
     end
   end
 

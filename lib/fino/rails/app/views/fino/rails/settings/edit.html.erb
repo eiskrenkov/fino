@@ -55,7 +55,7 @@
           </div>
 
           <div class="px-4 sm:px-0">
-            <h3 class="text-base/7 font-semibold text-gray-900">Scope Overrides</h3>
+            <h3 class="text-base/7 font-semibold text-gray-900">Overrides</h3>
             <p class="mt-1 text-sm/6 text-gray-600">Override the setting value for specific scopes</p>
           </div>
 
@@ -126,6 +126,157 @@
                         input_class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" %>
             <% end %>
           </div>
+
+          <div class="px-4 sm:px-0">
+            <h3 class="text-base/7 font-semibold text-gray-900">A/B Testing</h3>
+            <p class="mt-1 text-sm/6 text-gray-600">Set up variants for A/B testing with percentage-based traffic distribution</p>
+          </div>
+
+          <div class="bg-white shadow-xs outline outline-gray-900/5 sm:rounded-xl md:col-span-2">
+            <div class="px-4 py-6 sm:p-6">
+              <% if @setting.variants.empty? %>
+                <div class="text-center py-6" id="ab-setup">
+                  <p class="text-sm text-gray-500 mb-4">No A/B test variants configured</p>
+                  <%= button_tag "Set Up", type: "button", id: "setup-ab-testing", class: "rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" %>
+                </div>
+              <% else %>
+                <div id="ab-testing-content">
+                  <div id="variant-tabs">
+                    <div class="grid grid-cols-1 sm:hidden">
+                      <select id="variant-select" aria-label="Select a variant" class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-2 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600">
+                        <option value="control">Control</option>
+                        <% @setting.variants.each_with_index do |variant, index| %>
+                          <% if index == 0 %>
+                            <!-- Control is handled separately -->
+                          <% else %>
+                            <option value="variant-<%= index - 1 %>">Variant <%= index %></option>
+                          <% end %>
+                        <% end %>
+                      </select>
+                      <svg viewBox="0 0 16 16" fill="currentColor" data-slot="icon" aria-hidden="true" class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end fill-gray-500">
+                        <path d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" fill-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <div class="hidden sm:block">
+                      <div class="border-b border-gray-200">
+                        <nav aria-label="Tabs" class="-mb-px flex space-x-8">
+                          <a href="#" data-tab="control" class="variant-tab border-b-2 border-indigo-500 px-1 py-4 text-sm font-medium whitespace-nowrap text-indigo-600" aria-current="page">Control</a>
+                          <% @setting.variants.each_with_index do |variant, index| %>
+                            <% if index == 0 %>
+                              <!-- Control is handled separately -->
+                            <% else %>
+                              <a href="#" data-tab="variant-<%= index - 1 %>" class="variant-tab border-b-2 border-transparent px-1 py-4 text-sm font-medium whitespace-nowrap text-gray-500 hover:border-gray-300 hover:text-gray-700">Variant <%= index %></a>
+                            <% end %>
+                          <% end %>
+                          <button type="button" id="add-variant" class="border-b-2 border-transparent px-1 py-4 text-sm font-medium whitespace-nowrap text-gray-500 hover:border-gray-300 hover:text-gray-700">+ Add Variant</button>
+                        </nav>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="variant-content" class="mt-6">
+                    <% @setting.variants.each_with_index do |variant, index| %>
+                      <div id="<%= index == 0 ? 'control' : "variant-#{index - 1}" %>-content" class="variant-content <%= 'hidden' unless index == 0 %>">
+                        <div class="flex flex-col gap-3">
+                          <p class="mt-1 text-xs text-gray-500">Control variant falls back to the global setting value, percentage is calculated automatically</p>
+                          <div class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6">
+                            <div class="sm:col-span-2">
+                              <label for="variants_<%= index %>_percentage" class="block text-sm/6 font-medium text-gray-900">Percentage</label>
+                              <div class="mt-2">
+                                <input type="number" name="variants[<%= index %>][percentage]" id="variants_<%= index %>_percentage" class="<%= index == 0 ? '' : 'variant-percentage' %> block w-full rounded-md px-3 py-1.5 text-base outline-1 -outline-offset-1 outline-gray-300 sm:text-sm/6 <%= index == 0 ? 'bg-gray-100 text-gray-500' : 'bg-white text-gray-900 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600' %>" value="<%= variant.percentage %>" min="0" max="100" <%= 'readonly' if index == 0 %> />
+                              </div>
+                            </div>
+                            <div class="sm:col-span-3">
+                              <label for="variants_<%= index %>_value" class="block text-sm/6 font-medium text-gray-900">Value</label>
+                              <div class="mt-2">
+                                <% if index == 0 %>
+                                  <div class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-base text-gray-500 outline-1 -outline-offset-1 outline-gray-300 sm:text-sm/6">
+                                    <%= @setting.value.inspect %>
+                                  </div>
+                                  <input type="hidden" name="variants[<%= index %>][value]" value="<%= variant.value %>" />
+                                <% else %>
+                                  <%= render "fino/rails/settings/types/#{@setting.type}",
+                                            form: f,
+                                            setting: @setting,
+                                            field_name: "variants_#{index}_value",
+                                            field_id: "variants_#{index}_value",
+                                            field_name_attr: "variants[#{index}][value]",
+                                            field_value: variant.value,
+                                            wrapper_class: "",
+                                            input_class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" %>
+                                <% end %>
+                              </div>
+                            </div>
+                            <div class="sm:col-span-1 flex items-end">
+                              <% if index != 0 %>
+                                <%= button_tag "Remove", type: "button", class: "remove-variant rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600", data: { variant_index: index } %>
+                              <% end %>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+
+              <div id="ab-testing-content" class="hidden">
+                <div id="variant-tabs">
+                  <div class="grid grid-cols-1 sm:hidden">
+                    <select id="variant-select" aria-label="Select a variant" class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-2 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600">
+                      <option value="control">Control</option>
+                    </select>
+                    <svg viewBox="0 0 16 16" fill="currentColor" data-slot="icon" aria-hidden="true" class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end fill-gray-500">
+                      <path d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" fill-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div class="hidden sm:block">
+                    <div class="border-b border-gray-200">
+                      <nav aria-label="Tabs" class="-mb-px flex space-x-8">
+                        <a href="#" data-tab="control" class="variant-tab border-b-2 border-indigo-500 px-1 py-4 text-sm font-medium whitespace-nowrap text-indigo-600" aria-current="page">Control</a>
+                        <button type="button" id="add-variant" class="border-b-2 border-transparent px-1 py-4 text-sm font-medium whitespace-nowrap text-gray-500 hover:border-gray-300 hover:text-gray-700">+ Add Variant</button>
+                      </nav>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="variant-content" class="mt-6">
+                  <div id="control-content" class="variant-content">
+                    <div class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6">
+                      <div class="sm:col-span-2">
+                        <label class="block text-sm/6 font-medium text-gray-900">Percentage</label>
+                        <div class="mt-2">
+                          <input type="number" id="control-percentage" class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-base text-gray-500 outline-1 -outline-offset-1 outline-gray-300 sm:text-sm/6" value="100" readonly />
+                        </div>
+                      </div>
+                      <div class="sm:col-span-4">
+                        <label class="block text-sm/6 font-medium text-gray-900">Value</label>
+                        <div class="mt-2">
+                          <div class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-base text-gray-500 outline-1 -outline-offset-1 outline-gray-300 sm:text-sm/6">
+                            <%= @setting.value.inspect %>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="variant-templates" style="display: none;">
+            <%= f.fields_for :template do |template_form| %>
+              <%= render "fino/rails/settings/types/#{@setting.type}",
+                        form: template_form,
+                        setting: @setting,
+                        field_name: "variants_TEMPLATE_INDEX_value",
+                        field_id: "variants_TEMPLATE_INDEX_value",
+                        field_name_attr: "variants[TEMPLATE_INDEX][value]",
+                        field_value: nil,
+                        wrapper_class: "",
+                        input_class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" %>
+            <% end %>
+          </div>
         </div>
       </div>
     <% end %>
@@ -191,5 +342,207 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   });
+
+  // A/B Testing functionality
+  const setupAbButton = document.getElementById('setup-ab-testing');
+  const abSetup = document.getElementById('ab-setup');
+  const abTestingContent = document.getElementById('ab-testing-content');
+  const addVariantButton = document.getElementById('add-variant');
+  const variantTemplates = document.getElementById('variant-templates');
+  let variantIndex = <%= @setting.variants.length - 1 %>;
+
+  // Set up A/B testing
+  if (setupAbButton) {
+    setupAbButton.addEventListener('click', function() {
+      abSetup.style.display = 'none';
+      abTestingContent.style.display = 'block';
+      abTestingContent.classList.remove('hidden');
+    });
+  }
+
+  // Tab switching functionality
+  function switchToTab(tabName) {
+    // Update tab appearance
+    document.querySelectorAll('.variant-tab').forEach(tab => {
+      tab.classList.remove('border-indigo-500', 'text-indigo-600');
+      tab.classList.add('border-transparent', 'text-gray-500');
+      tab.removeAttribute('aria-current');
+    });
+
+    const activeTab = document.querySelector(`[data-tab="${tabName}"]`);
+    if (activeTab) {
+      activeTab.classList.remove('border-transparent', 'text-gray-500');
+      activeTab.classList.add('border-indigo-500', 'text-indigo-600');
+      activeTab.setAttribute('aria-current', 'page');
+    }
+
+    // Show/hide content
+    document.querySelectorAll('.variant-content').forEach(content => {
+      content.classList.add('hidden');
+    });
+
+    const activeContent = document.getElementById(`${tabName}-content`);
+    if (activeContent) {
+      activeContent.classList.remove('hidden');
+    }
+
+    // Update mobile select
+    const variantSelect = document.getElementById('variant-select');
+    if (variantSelect) {
+      variantSelect.value = tabName;
+    }
+  }
+
+  // Tab click handlers
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('variant-tab')) {
+      e.preventDefault();
+      const tabName = e.target.getAttribute('data-tab');
+      switchToTab(tabName);
+    }
+  });
+
+  // Mobile select handler
+  const variantSelect = document.getElementById('variant-select');
+  if (variantSelect) {
+    variantSelect.addEventListener('change', function() {
+      switchToTab(this.value);
+    });
+  }
+
+  // Add variant functionality
+  if (addVariantButton) {
+    addVariantButton.addEventListener('click', function() {
+      // The actual array index will be variantIndex + 1 (since control is at index 0)
+      const actualArrayIndex = variantIndex + 1;
+
+      // Get template HTML
+      let valueInputTemplate = variantTemplates.innerHTML
+        .replace(/TEMPLATE_INDEX/g, actualArrayIndex)
+        .replace(/variants_\w+_value/g, `variants_${actualArrayIndex}_value`)
+        .trim();
+
+      // Add new tab
+      const tabsNav = document.querySelector('nav[aria-label="Tabs"]');
+      const newTab = document.createElement('a');
+      newTab.href = '#';
+      newTab.setAttribute('data-tab', `variant-${variantIndex}`);
+      newTab.className = 'variant-tab border-b-2 border-transparent px-1 py-4 text-sm font-medium whitespace-nowrap text-gray-500 hover:border-gray-300 hover:text-gray-700';
+      newTab.textContent = `Variant ${actualArrayIndex}`;
+
+      tabsNav.insertBefore(newTab, addVariantButton);
+
+      // Add to mobile select
+      const option = document.createElement('option');
+      option.value = `variant-${variantIndex}`;
+      option.textContent = `Variant ${actualArrayIndex}`;
+      variantSelect.appendChild(option);
+
+      // Add new content
+      const variantContent = document.getElementById('variant-content');
+      const newContent = document.createElement('div');
+      newContent.id = `variant-${variantIndex}-content`;
+      newContent.className = 'variant-content hidden';
+      newContent.innerHTML = `
+        <div class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6">
+          <div class="sm:col-span-2">
+            <label for="variants_${actualArrayIndex}_percentage" class="block text-sm/6 font-medium text-gray-900">Percentage</label>
+            <div class="mt-2">
+              <input type="number" name="variants[${actualArrayIndex}][percentage]" id="variants_${actualArrayIndex}_percentage" class="variant-percentage block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" value="20" min="0" max="100" />
+            </div>
+          </div>
+          <div class="sm:col-span-3">
+            <label for="variants_${actualArrayIndex}_value" class="block text-sm/6 font-medium text-gray-900">Value</label>
+            <div class="mt-2">
+              ${valueInputTemplate}
+            </div>
+          </div>
+          <div class="sm:col-span-1 flex items-end">
+            <button type="button" class="remove-variant rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600" data-variant-index="${actualArrayIndex}">Remove</button>
+          </div>
+        </div>
+      `;
+
+      variantContent.appendChild(newContent);
+
+      // Switch to new tab
+      switchToTab(`variant-${variantIndex}`);
+
+      // Recalculate percentages
+      recalculatePercentages();
+
+      variantIndex++;
+    });
+  }
+
+  // Remove variant functionality
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-variant')) {
+      const variantIndex = e.target.getAttribute('data-variant-index');
+      const tabName = `variant-${variantIndex}`;
+
+      // Remove tab
+      const tab = document.querySelector(`[data-tab="${tabName}"]`);
+      if (tab) {
+        tab.remove();
+      }
+
+      // Remove from mobile select
+      const option = document.querySelector(`option[value="${tabName}"]`);
+      if (option) {
+        option.remove();
+      }
+
+      // Remove content
+      const content = document.getElementById(`${tabName}-content`);
+      if (content) {
+        content.remove();
+      }
+
+      // Switch to control tab
+      switchToTab('control');
+
+      // Recalculate percentages
+      recalculatePercentages();
+    }
+  });
+
+  // Percentage recalculation
+  function recalculatePercentages() {
+    const percentageInputs = document.querySelectorAll('.variant-percentage');
+
+    // Find the control percentage input (first variant, index 0)
+    const controlPercentage = document.getElementById('variants_0_percentage');
+
+    if (!controlPercentage) return;
+
+    let totalVariantPercentage = 0;
+    percentageInputs.forEach(input => {
+      const value = parseInt(input.value) || 0;
+      totalVariantPercentage += value;
+    });
+
+    const controlValue = Math.max(0, 100 - totalVariantPercentage);
+    controlPercentage.value = controlValue;
+
+    // Update control percentage color based on validity
+    if (totalVariantPercentage > 100) {
+      controlPercentage.classList.add('text-red-600');
+      controlPercentage.classList.remove('text-gray-500');
+    } else {
+      controlPercentage.classList.remove('text-red-600');
+      controlPercentage.classList.add('text-gray-500');
+    }
+  }
+
+  // Listen for percentage changes
+  document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('variant-percentage')) {
+      recalculatePercentages();
+    }
+  });
+
+  // Initial percentage calculation
+  recalculatePercentages();
 });
 </script>
