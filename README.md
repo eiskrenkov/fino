@@ -102,4 +102,8 @@ Rails.application.routes.draw do
 end
 ```
 
-<img width="1229" height="641" alt="Screenshot 2025-09-04 at 16 01 51" src="https://github.com/user-attachments/assets/646df84c-c25b-4890-9637-c481e18c9bd4" />
+<img width="1493" height="676" alt="Screenshot 2025-09-19 at 13 09 06" src="https://github.com/user-attachments/assets/19b6147a-e18c-41cf-aac7-99111efcc9d5" />
+
+
+<img width="1775" height="845" alt="Screenshot 2025-09-19 at 13 09 33" src="https://github.com/user-attachments/assets/c0010abd-285d-43d0-ae5d-ce0edb781309" />
+
