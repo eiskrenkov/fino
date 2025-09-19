@@ -3,6 +3,7 @@
 require "fino-redis"
 
 Rails.application.configure do
+  config.fino.cache_within_request = false
   config.fino.preload_before_request = true
   config.fino.instrument = false
 end

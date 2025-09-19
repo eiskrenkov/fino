@@ -25,6 +25,10 @@ module Fino::Setting
         )
       end
 
+      variants.prepend(
+        Fino::Variant.new(percentage: 100.0 - variants.sum(&:percentage), value: Fino::Variant::CONTROL)
+      )
+
       new(
         setting_definition,
         value,

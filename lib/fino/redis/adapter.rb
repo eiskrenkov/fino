@@ -29,8 +29,9 @@ class Fino::Redis::Adapter
     end
 
     variants.each do |variant|
-      value = variant.value == Fino::Variant::CONTROL ? "control" : serialize_value.call(variant.value)
-      hash["#{VARIANT_PREFIX}/#{variant.percentage}/#{VALUE_KEY}"] = value
+      next if variant.value == Fino::Variant::CONTROL
+
+      hash["#{VARIANT_PREFIX}/#{variant.percentage}/#{VALUE_KEY}"] = serialize_value.call(variant.value)
     end
 
     redis.mapped_hreplace(redis_key_for(setting_definition), hash)
@@ -62,9 +63,8 @@ class Fino::Redis::Adapter
       next unless key.start_with?("#{VARIANT_PREFIX}/")
 
       percentage = key.split("/", 3)[1]
-      final_value = value == "control" ? Fino::Variant::CONTROL : value
 
-      memo << { percentage: percentage.to_f, value: final_value }
+      memo << { percentage: percentage.to_f, value: value }
     end
   end
 
