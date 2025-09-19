@@ -1,6 +1,6 @@
 # Fino
 
-⚠️ Fino is under active development. API changes are possible ⚠️
+⚠️ Fino in active development phase at wasn't properly battle tested in production just yet. Give us a star and stay tuned for Production test results and new features
 
 Fino is a dynamic settings engine for Ruby and Rails
 
@@ -58,6 +58,34 @@ Fino.values(:model, :temperature, at: :openai) #=> ["gpt-4", 0.7]
 
 Fino.set(model: "gpt-5", at: :openai)
 Fino.value(:model, at: :openai) #=> "gpt-5"
+```
+
+## Overrides
+
+```ruby
+Fino.value(:model, at: :openai) #=> "gpt-4o"
+
+Fino.set(model: "gpt-5", at: :openai, overrides: { "qa" => "our_local_model_not_to_pay_to_sam_altman" })
+
+Fino.value(:model, at: :openai) #=> "gpt-5"
+Fino.value(:model, at: :openai, for: "qa") #=> "our_local_model_not_to_pay_to_sam_altman"
+```
+
+## A/B testing
+
+```ruby
+Fino.value(:model, at: :openai) #=> "gpt-4o"
+
+# "gpt-5" becomes the control variant value and a 20.0% variant is created with value "gpt-6"
+Fino.set(model: "gpt-5", at: :openai, variants: { 20.0 => "gpt-6" })
+
+Fino.variant(:model, at: :openai, for: "user_1") #=> #<struct Fino::Variant percentage=20.0, value="gpt-6">
+
+# Picked variant is sticked to the user
+Fino.value(:model, at: :openai, for: "user_1") #=> "gpt-6"
+Fino.value(:model, at: :openai, for: "user_1") #=> "gpt-6"
+
+Fino.value(:model, at: :openai, for: "user_2") #=> "gpt-5"
 ```
 
 ### Manage settings via UI
