@@ -54,7 +54,7 @@ class Fino::Library
     end
 
     variants.prepend(
-      Fino::Variant.new(100.0 - variants.sum(&:percentage), Fino::Variant::CONTROL)
+      Fino::Variant.new(100.0 - variants.sum(&:percentage), Fino::Variant::CONTROL_VALUE)
     )
 
     pipeline.write(

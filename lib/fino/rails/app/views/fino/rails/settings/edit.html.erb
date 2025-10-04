@@ -63,7 +63,7 @@
             <div class="px-4 py-6 sm:p-6">
               <div id="scope-overrides">
                 <%= f.fields_for :overrides do |override_form| %>
-                  <% @setting.scope_overrides.each_with_index do |(scope, value), index| %>
+                  <% @setting.overrides.each_with_index do |(scope, value), index| %>
                     <div class="scope-override-item mb-6 last:mb-0" data-index="<%= index %>">
                       <div class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6">
                         <div class="sm:col-span-2">
@@ -100,7 +100,7 @@
                   <% end %>
                 <% end %>
 
-                <% if @setting.scope_overrides.empty? %>
+                <% if @setting.overrides.empty? %>
                   <div class="text-center py-6">
                     <p class="text-sm text-gray-500">No scope overrides configured</p>
                   </div>
@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const addButton = document.getElementById('add-override');
   const overridesContainer = document.getElementById('scope-overrides');
   const templateContainer = document.getElementById('override-templates');
-  let overrideIndex = <%= @setting.scope_overrides.length %>;
+  let overrideIndex = <%= @setting.overrides.length %>;
 
   addButton.addEventListener('click', function() {
     // Get the template HTML and replace placeholders with actual index

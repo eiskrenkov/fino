@@ -27,14 +27,9 @@ class Fino::Pipe::Storage
 
   def to_setting(setting_definition, raw_adapter_data)
     raw_value = adapter.fetch_value_from(raw_adapter_data)
-    scoped_raw_values = adapter.fetch_scoped_values_from(raw_adapter_data)
+    raw_overrides = adapter.fetch_raw_overrides_from(raw_adapter_data)
     raw_variants = adapter.fetch_raw_variants_from(raw_adapter_data)
 
-    setting_definition.type_class.build(
-      setting_definition,
-      raw_value,
-      scoped_raw_values,
-      raw_variants
-    )
+    Fino::SettingBuilder.new(setting_definition).call(raw_value, raw_overrides, raw_variants)
   end
 end

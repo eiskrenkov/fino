@@ -18,7 +18,7 @@ module Fino::Rails::SettingsHelper
 
   def boolean_setting_status(setting)
     global_value = setting.value
-    overrides = setting.scope_overrides
+    overrides = setting.overrides
 
     if overrides.empty?
       return {

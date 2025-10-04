@@ -29,7 +29,7 @@ class Fino::Redis::Adapter
     end
 
     variants.each do |variant|
-      next if variant.value == Fino::Variant::CONTROL
+      next if variant.value == Fino::Variant::CONTROL_VALUE
 
       hash["#{VARIANT_PREFIX}/#{variant.percentage}/#{VALUE_KEY}"] = serialize_value.call(variant.value)
     end
@@ -49,7 +49,7 @@ class Fino::Redis::Adapter
     raw_adapter_data.key?(VALUE_KEY) ? raw_adapter_data.delete(VALUE_KEY) : Fino::EMPTINESS
   end
 
-  def fetch_scoped_values_from(raw_adapter_data)
+  def fetch_raw_overrides_from(raw_adapter_data)
     raw_adapter_data.each_with_object({}) do |(key, value), memo|
       next unless key.start_with?("#{SCOPE_PREFIX}/")
 

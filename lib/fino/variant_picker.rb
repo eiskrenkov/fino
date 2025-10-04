@@ -9,7 +9,7 @@ class Fino::VariantPicker
     @setting = setting
   end
 
-  def call(scope)
+  def call(scope) # rubocop:disable Metrics/AbcSize
     return nil if setting.variants.empty?
 
     random = Zlib.crc32("#{setting.key}#{scope}") % (100 * SCALING_FACTOR)

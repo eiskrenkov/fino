@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module Fino::Setting
+  include Fino::PrettyInspectable
+
   def self.included(base)
     base.extend(ClassMethods)
   end
@@ -13,58 +15,27 @@ module Fino::Setting
     def deserialize(raw_value)
       raise NotImplementedError
     end
-
-    def build(setting_definition, raw_value, scoped_raw_values, raw_variants)
-      value = raw_value.equal?(Fino::EMPTINESS) ? setting_definition.options[:default] : deserialize(raw_value)
-      scoped_values = scoped_raw_values.transform_values { |v| deserialize(v) }
-
-      variants = raw_variants.map do |raw_variant|
-        Fino::Variant.new(
-          raw_variant.fetch(:percentage),
-          deserialize(raw_variant.fetch(:value))
-        )
-      end
-
-      variants.prepend(
-        Fino::Variant.new(percentage: 100.0 - variants.sum(&:percentage), value: Fino::Variant::CONTROL)
-      )
-
-      new(
-        setting_definition,
-        value,
-        scoped_values,
-        variants
-      )
-    end
   end
 
-  attr_reader :definition, :variants
+  attr_reader :definition, :global_value, :overrides, :variants
 
-  def initialize(definition, value, scoped_values = {}, variants = [])
+  def initialize(definition, global_value, overrides = {}, variants = [])
     @definition = definition
-    @value = value
-    @scoped_values = scoped_values
+    @global_value = global_value
+    @overrides = overrides
     @variants = variants
   end
 
-  def name
-    definition.setting_name
-  end
-
-  def key
-    definition.key
-  end
-
   def value(**context)
-    return @value unless (scope = context[:for])
+    return global_value unless (scope = context[:for])
 
-    scoped_values.fetch(scope.to_s) do
-      return @value if variants.empty?
+    overrides.fetch(scope.to_s) do
+      return global_value if variants.empty?
 
       variant = variant(for: scope)
-      result = variant_id_to_value.fetch(variant.id, @value)
+      result = value_by_variant_id.fetch(variant.id, global_value)
 
-      return @value if result == Fino::Variant::CONTROL
+      return global_value if result == Fino::Variant::CONTROL_VALUE
 
       result
     end
@@ -76,18 +47,12 @@ module Fino::Setting
     )
   end
 
-  def variant_id_to_value
-    @variant_id_to_value ||= variants.each_with_object({}) do |variant, memo|
-      memo[variant.id] = variant.value
-    end
+  def name
+    definition.setting_name
   end
 
-  def overriden_scopes
-    scoped_values.keys
-  end
-
-  def scope_overrides
-    scoped_values
+  def key
+    definition.key
   end
 
   def type
@@ -114,20 +79,22 @@ module Fino::Setting
     definition.description
   end
 
-  def inspect
-    attributes = [
-      "key=#{key.inspect}",
-      "type=#{type_class.inspect}",
-      "value=#{value.inspect}",
-      "overrides=#{@scoped_values.inspect}",
-      "variants=#{variants.inspect}",
-      "default=#{default.inspect}"
-    ]
-
-    "#<#{self.class.name} #{attributes.join(', ')}>"
-  end
-
   private
 
-  attr_reader :scoped_values
+  def value_by_variant_id
+    @value_by_variant_id ||= variants.each_with_object({}) do |variant, memo|
+      memo[variant.id] = variant.value
+    end
+  end
+
+  def inspectable_attributes
+    {
+      key: key,
+      type: type_class,
+      default: default,
+      global_value: global_value,
+      overrides: overrides,
+      variants: variants
+    }
+  end
 end
