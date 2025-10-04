@@ -62,10 +62,19 @@ class Fino::Library
     )
   end
 
-  def slice(**mapping)
-    setting_definitions = mapping.each_with_object([]) do |(section_name, setting_names), memo|
-      Array(setting_names).each do |setting_name|
-        memo << build_setting_definition(setting_name, at: section_name)
+  def slice(*settings)
+    setting_definitions = settings.each_with_object([]) do |symbol_or_hash, memo|
+      case symbol_or_hash
+      when Symbol
+        memo << build_setting_definition(symbol_or_hash)
+      when Hash
+        symbol_or_hash.each do |section_name, setting_names|
+          Array(setting_names).each do |setting_name|
+            memo << build_setting_definition(setting_name, at: section_name)
+          end
+        end
+      else
+        raise ArgumentError, "Settings to preload should be either symbols or hashes"
       end
     end
 
@@ -77,7 +86,7 @@ class Fino::Library
   attr_reader :configuration
 
   def build_setting_definition(setting_name, at: nil)
-    configuration.registry.setting_definition(setting_name.to_s, at&.to_s)
+    configuration.registry.setting_definition!(setting_name.to_s, at&.to_s)
   end
 
   def pipeline

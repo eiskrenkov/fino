@@ -3,7 +3,7 @@
 class Fino::Settings::Boolean
   include Fino::Setting
 
-  self.type_identitfier = :boolean
+  self.type_identifier = :boolean
 
   class << self
     def serialize(value)

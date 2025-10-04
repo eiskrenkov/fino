@@ -1,9 +1,22 @@
 # frozen_string_literal: true
 
-Fino::AbTesting::Variant = Struct.new(:percentage, :value, keyword_init: true) do
+class Fino::AbTesting::Variant
+  CONTROL_VALUE = Class.new do
+    def inspect
+      "Fino::AbTesting::Variant::CONTROL_VALUE"
+    end
+  end.new
+
   include Fino::PrettyInspectable
 
-  def id = @id ||= SecureRandom.uuid
+  attr_reader :id, :percentage, :value
+
+  def initialize(percentage:, value:)
+    @id = SecureRandom.uuid
+
+    @percentage = percentage.to_f
+    @value = value
+  end
 
   private
 
@@ -14,9 +27,3 @@ Fino::AbTesting::Variant = Struct.new(:percentage, :value, keyword_init: true) d
     }
   end
 end
-
-Fino::AbTesting::Variant::CONTROL_VALUE = Class.new do
-  def inspect
-    "Fino::AbTesting::Variant::CONTROL_VALUE"
-  end
-end.new

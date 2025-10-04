@@ -9,7 +9,7 @@ class Fino::Definition::Setting
   ].freeze
 
   SETTING_TYPE_TO_TYPE_CLASS_MAPPING = TYPE_CLASSES.each_with_object({}) do |klass, hash|
-    hash[klass.type_identitfier] = klass
+    hash[klass.type_identifier] = klass
   end.freeze
 
   attr_reader :setting_name, :section_definition, :type, :options
@@ -43,5 +43,14 @@ class Fino::Definition::Setting
 
   def key
     @key ||= path.reverse.join("/")
+  end
+
+  def eql?(other)
+    self.class.eql?(other.class) && key == other.key
+  end
+  alias == eql?
+
+  def hash
+    key.hash
   end
 end

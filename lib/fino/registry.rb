@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 class Fino::Registry
+  DuplicateSetting = Class.new(Fino::Error)
+  UnknownSetting = Class.new(Fino::Error)
+
   class DSL
     class SectionDSL
       def initialize(section_definition, registry)
@@ -46,22 +49,24 @@ class Fino::Registry
     end
   end
 
-  UnknownSetting = Class.new(Fino::Error)
-
   using Fino::Ext::Hash
 
   attr_reader :setting_definitions, :section_definitions
 
   def initialize
-    @setting_definitions = []
+    @setting_definitions = Set.new
     @setting_definitions_by_path = {}
 
-    @section_definitions = []
+    @section_definitions = Set.new
     @section_definitions_by_name = {}
   end
 
   def setting_definition(*path)
-    @setting_definitions_by_path.dig(*path.compact.reverse).tap do |definition|
+    @setting_definitions_by_path.dig(*path.compact.reverse.map(&:to_s))
+  end
+
+  def setting_definition!(*path)
+    setting_definition(*path).tap do |definition|
       raise UnknownSetting, "Unknown setting: #{path.compact.join('.')}" unless definition
     end
   end
@@ -82,13 +87,16 @@ class Fino::Registry
   end
 
   def register(setting_definition)
-    @setting_definitions << setting_definition
+    unless @setting_definitions.add?(setting_definition)
+      raise DuplicateSetting, "#{setting_definition.setting_name} is already registered at #{setting_definition.key}"
+    end
 
     @setting_definitions_by_path.deep_set(setting_definition, *setting_definition.path.map(&:to_s))
   end
 
   def register_section(section_definition)
-    @section_definitions << section_definition
-    @section_definitions_by_name.deep_set(section_definition, section_definition.name.to_s)
+    return unless @section_definitions.add?(section_definition)
+
+    @section_definitions_by_name[section_definition.name.to_s] = section_definition
   end
 end

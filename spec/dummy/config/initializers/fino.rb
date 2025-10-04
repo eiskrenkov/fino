@@ -34,7 +34,7 @@ Fino.configure do
     section :openai, label: "OpenAI" do
       setting :model,
               :string,
-              default: "gpt-4o",
+              default: "gpt-5",
               description: "OpenAI model"
 
       setting :temperature,

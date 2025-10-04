@@ -4,12 +4,30 @@ require "forwardable"
 require "zeitwerk"
 
 module Fino
-  module Configurable
+  module Stateful
     def configure(&block)
       configuration.instance_eval(&block)
     end
 
-    private
+    def reset!
+      Thread.current[:fino_library] = nil
+
+      @registry = nil
+      @configuration = nil
+    end
+
+    def reconfigure(&block)
+      reset!
+      configure(&block)
+    end
+
+    def library
+      Thread.current[:fino_library] ||= Fino::Library.new(configuration)
+    end
+
+    def registry
+      @registry ||= Fino::Registry.new
+    end
 
     def configuration
       @configuration ||= Fino::Configuration.new(registry)
@@ -25,31 +43,19 @@ module Fino
                    :setting,
                    :settings,
                    :slice,
-                   :set,
-                   :define_variants,
-                   :variant
-
-    module_function
+                   :set
 
     def library
       raise NotImplementedError
     end
   end
 
-  extend Configurable
   extend SettingsAccessible
+  extend Stateful
 
   EMPTINESS = Object.new.freeze
 
   module_function
-
-  def library
-    Thread.current[:fino_library] ||= Fino::Library.new(configuration)
-  end
-
-  def registry
-    @registry ||= Fino::Registry.new
-  end
 
   def logger
     @logger ||= begin

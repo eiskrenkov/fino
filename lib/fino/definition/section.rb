@@ -11,4 +11,13 @@ class Fino::Definition::Section
   def label
     options.fetch(:label, name.to_s.capitalize)
   end
+
+  def eql?(other)
+    self.class.eql?(other.class) && name == other.name
+  end
+  alias == eql?
+
+  def hash
+    name.hash
+  end
 end

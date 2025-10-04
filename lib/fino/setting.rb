@@ -8,12 +8,12 @@ module Fino::Setting
   end
 
   module ClassMethods
-    def type_identitfier=(identifier)
-      @type_identitfier = identifier
+    def type_identifier=(identifier)
+      @type_identifier = identifier
     end
 
-    def type_identitfier
-      @type_identitfier
+    def type_identifier
+      @type_identifier
     end
 
     def serialize(value)
