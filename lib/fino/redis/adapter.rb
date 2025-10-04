@@ -19,6 +19,14 @@ class Fino::Redis::Adapter
     redis.hgetall(redis_key_for(setting_definition))
   end
 
+  def read_multi(setting_definitions)
+    keys = setting_definitions.map { |definition| redis_key_for(definition) }
+
+    redis.pipelined do |pipeline|
+      keys.each { |key| pipeline.hgetall(key) }
+    end
+  end
+
   def write(setting_definition, value, overrides, variants)
     serialize_value = ->(raw_value) { setting_definition.type_class.serialize(raw_value) }
 
@@ -29,20 +37,12 @@ class Fino::Redis::Adapter
     end
 
     variants.each do |variant|
-      next if variant.value == Fino::Variant::CONTROL_VALUE
+      next if variant.value == Fino::AbTesting::Variant::CONTROL_VALUE
 
       hash["#{VARIANT_PREFIX}/#{variant.percentage}/#{VALUE_KEY}"] = serialize_value.call(variant.value)
     end
 
     redis.mapped_hreplace(redis_key_for(setting_definition), hash)
-  end
-
-  def read_multi(setting_definitions)
-    keys = setting_definitions.map { |definition| redis_key_for(definition) }
-
-    redis.pipelined do |pipeline|
-      keys.each { |key| pipeline.hgetall(key) }
-    end
   end
 
   def fetch_value_from(raw_adapter_data)

@@ -5,7 +5,7 @@ require "fino-redis"
 Rails.application.configure do
   config.fino.cache_within_request = false
   config.fino.preload_before_request = true
-  config.fino.instrument = false
+  config.fino.instrument = true
 end
 
 Fino.configure do
@@ -16,15 +16,15 @@ Fino.configure do
     )
   end
 
-  # cache { Fino::Cache::Memory.new(expires_in: 3.seconds) }
+  cache { Fino::Cache::Memory.new(expires_in: 3.seconds) }
 
   settings do
     setting :maintenance_mode,
             :boolean,
             default: false,
-            description: "
-            Enable maintenance mode for the system. Users will see a maintenance page when this is enabled
-            "
+            description: <<~DESC.strip
+              Enable maintenance mode for the system. Users will see a maintenance page when this is enabled
+            DESC
 
     setting :api_rate_limit,
             :integer,

@@ -10,13 +10,13 @@ class Fino::SettingBuilder
   def call(raw_value, raw_overrides, raw_variants)
     global_value = deserialize_global_value(raw_value)
     overrides = deserialize_overrides(raw_overrides)
-    variants = deserialize_variants(raw_variants)
+    experiment = deserialize_experiment(raw_variants)
 
     setting_definition.type_class.new(
       setting_definition,
       global_value,
       overrides,
-      variants
+      experiment
     )
   end
 
@@ -32,19 +32,17 @@ class Fino::SettingBuilder
     raw_overrides.transform_values { |v| deserialize(v) }
   end
 
-  def deserialize_variants(raw_variants)
-    variants = raw_variants.map do |raw_variant|
-      Fino::Variant.new(
-        raw_variant.fetch(:percentage),
-        deserialize(raw_variant.fetch(:value))
-      )
+  def deserialize_experiment(raw_variants)
+    return if raw_variants.empty?
+
+    Fino::AbTesting::Experiment.new(setting_definition).tap do |experiment|
+      raw_variants.each do |raw_variant|
+        experiment << Fino::AbTesting::Variant.new(
+          percentage: raw_variant.fetch(:percentage),
+          value: deserialize(raw_variant.fetch(:value))
+        )
+      end
     end
-
-    variants.prepend(
-      Fino::Variant.new(percentage: 100.0 - variants.sum(&:percentage), value: Fino::Variant::CONTROL_VALUE)
-    )
-
-    variants
   end
 
   def deserialize(value)

@@ -79,7 +79,7 @@ Fino.value(:model, at: :openai) #=> "gpt-4o"
 # "gpt-5" becomes the control variant value and a 20.0% variant is created with value "gpt-6"
 Fino.set(model: "gpt-5", at: :openai, variants: { 20.0 => "gpt-6" })
 
-Fino.variant(:model, at: :openai, for: "user_1") #=> #<struct Fino::Variant percentage=20.0, value="gpt-6">
+Fino.setting(:model, at: :openai).experiment.variant(for: "user_1") #=> #<Fino::AbTesting::Variant percentage: 20.0, value: "gpt-6">
 
 # Picked variant is sticked to the user
 Fino.value(:model, at: :openai, for: "user_1") #=> "gpt-6"

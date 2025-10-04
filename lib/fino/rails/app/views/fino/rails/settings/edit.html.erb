@@ -134,9 +134,9 @@
 
           <div class="bg-white shadow-xs outline outline-gray-900/5 sm:rounded-xl md:col-span-2">
             <div class="px-4 py-6 sm:p-6">
-              <% if @setting.variants.empty? %>
+              <% if @setting.experiment == nil %>
                 <div class="text-center py-6" id="ab-setup">
-                  <p class="text-sm text-gray-500 mb-4">No A/B test variants configured</p>
+                  <p class="text-sm text-gray-500 mb-4">No A/B experiment configured</p>
                   <%= button_tag "Set Up", type: "button", id: "setup-ab-testing", class: "rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" %>
                 </div>
               <% else %>
@@ -145,7 +145,7 @@
                     <div class="grid grid-cols-1 sm:hidden">
                       <select id="variant-select" aria-label="Select a variant" class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-2 pr-8 pl-3 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600">
                         <option value="control">Control</option>
-                        <% @setting.variants.each_with_index do |variant, index| %>
+                        <% @setting.experiment.variants.each_with_index do |variant, index| %>
                           <% if index == 0 %>
                             <!-- Control is handled separately -->
                           <% else %>
@@ -161,7 +161,7 @@
                       <div class="border-b border-gray-200">
                         <nav aria-label="Tabs" class="-mb-px flex space-x-8">
                           <a href="#" data-tab="control" class="variant-tab border-b-2 border-indigo-500 px-1 py-4 text-sm font-medium whitespace-nowrap text-indigo-600" aria-current="page">Control</a>
-                          <% @setting.variants.each_with_index do |variant, index| %>
+                          <% @setting.experiment.variants.each_with_index do |variant, index| %>
                             <% if index == 0 %>
                               <!-- Control is handled separately -->
                             <% else %>
@@ -175,7 +175,7 @@
                   </div>
 
                   <div id="variant-content" class="mt-6">
-                    <% @setting.variants.each_with_index do |variant, index| %>
+                    <% @setting.experiment.variants.each_with_index do |variant, index| %>
                       <div id="<%= index == 0 ? 'control' : "variant-#{index - 1}" %>-content" class="variant-content <%= 'hidden' unless index == 0 %>">
                         <div class="flex flex-col gap-3">
                           <p class="mt-1 text-xs text-gray-500">Control variant falls back to the global setting value, percentage is calculated automatically</p>
@@ -349,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const abTestingContent = document.getElementById('ab-testing-content');
   const addVariantButton = document.getElementById('add-variant');
   const variantTemplates = document.getElementById('variant-templates');
-  let variantIndex = <%= @setting.variants.length - 1 %>;
+  let variantIndex = <%= @setting.experiment&.variants&.length.to_i - 1 %>;
 
   // Set up A/B testing
   if (setupAbButton) {

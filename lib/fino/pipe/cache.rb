@@ -22,8 +22,8 @@ class Fino::Pipe::Cache
     end
   end
 
-  def write(setting_definition, value, **context)
-    pipe.write(setting_definition, value, **context)
+  def write(setting_definition, value, overrides, variants)
+    pipe.write(setting_definition, value, overrides, variants)
 
     cache.delete(setting_definition.key)
   end

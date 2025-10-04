@@ -17,34 +17,26 @@ module Fino::Setting
     end
   end
 
-  attr_reader :definition, :global_value, :overrides, :variants
+  attr_reader :definition, :global_value, :overrides, :experiment
 
-  def initialize(definition, global_value, overrides = {}, variants = [])
+  def initialize(definition, global_value, overrides = {}, experiment = nil)
     @definition = definition
     @global_value = global_value
     @overrides = overrides
-    @variants = variants
+    @experiment = experiment
   end
 
   def value(**context)
     return global_value unless (scope = context[:for])
 
     overrides.fetch(scope.to_s) do
-      return global_value if variants.empty?
+      return global_value unless experiment
 
-      variant = variant(for: scope)
-      result = value_by_variant_id.fetch(variant.id, global_value)
+      value = experiment.value(for: scope)
+      return global_value if value == Fino::AbTesting::Variant::CONTROL_VALUE
 
-      return global_value if result == Fino::Variant::CONTROL_VALUE
-
-      result
+      value
     end
-  end
-
-  def variant(for:)
-    Fino::VariantPicker.new(self).call(
-      binding.local_variable_get(:for)
-    )
   end
 
   def name
@@ -81,20 +73,15 @@ module Fino::Setting
 
   private
 
-  def value_by_variant_id
-    @value_by_variant_id ||= variants.each_with_object({}) do |variant, memo|
-      memo[variant.id] = variant.value
-    end
-  end
-
   def inspectable_attributes
     {
       key: key,
       type: type_class,
       default: default,
-      global_value: global_value,
-      overrides: overrides,
-      variants: variants
-    }
+      global_value: global_value
+    }.tap do |attributes|
+      attributes[:overrides] = overrides if overrides.present?
+      attributes[:experiment] = experiment if experiment
+    end
   end
 end

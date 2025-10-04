@@ -13,7 +13,7 @@ module Fino::Pipe
     raise NotImplementedError
   end
 
-  def write(setting_definition, value, overrides = {}, variants = {})
+  def write(setting_definition, value, overrides, variants)
     raise NotImplementedError
   end
 

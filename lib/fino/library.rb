@@ -34,12 +34,6 @@ class Fino::Library
     pipeline.read_multi(setting_definitions)
   end
 
-  def variant(setting_name, at: nil, for:)
-    setting(setting_name, at: at).variant(
-      for: binding.local_variable_get(:for)
-    )
-  end
-
   def set(**data)
     at = data.delete(:at)
     raw_overrides = data.delete(:overrides) || {}
@@ -49,19 +43,22 @@ class Fino::Library
     setting_definition = build_setting_definition(setting_name, at: at)
     value = setting_definition.type_class.deserialize(raw_value)
 
-    variants = raw_variants.map do |percentage, value|
-      Fino::Variant.new(percentage, setting_definition.type_class.deserialize(value))
-    end
+    overrides = raw_overrides.transform_values { |v| setting_definition.type_class.deserialize(v) }
 
-    variants.prepend(
-      Fino::Variant.new(100.0 - variants.sum(&:percentage), Fino::Variant::CONTROL_VALUE)
-    )
+    experiment = Fino::AbTesting::Experiment.new(setting_definition)
+
+    raw_variants.map do |percentage, value|
+      experiment << Fino::AbTesting::Variant.new(
+        percentage: percentage,
+        value: setting_definition.type_class.deserialize(value)
+      )
+    end
 
     pipeline.write(
       setting_definition,
       value,
-      raw_overrides.transform_values { |v| setting_definition.type_class.deserialize(v) },
-      variants
+      overrides,
+      experiment.variants
     )
   end
 
@@ -73,11 +70,6 @@ class Fino::Library
     end
 
     pipeline.read_multi(setting_definitions)
-  end
-
-  def set_variants(setting_name, at: nil, variants:)
-    setting_definition = build_setting_definition(setting_name, at: at)
-    pipeline.write_variants(setting_definition, variants)
   end
 
   private
