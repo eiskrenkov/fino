@@ -15,7 +15,7 @@ class Fino::Pipe::Cache
   end
 
   def read_multi(setting_definitions)
-    cache.fetch_multi(setting_definitions.map(&:key)) do |missing_keys|
+    cache.fetch_multi(*setting_definitions.map(&:key)) do |missing_keys|
       uncached_setting_definitions = setting_definitions.filter { |sd| missing_keys.include?(sd.key) }
 
       missing_keys.zip(pipe.read_multi(uncached_setting_definitions))

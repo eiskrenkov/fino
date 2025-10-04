@@ -19,4 +19,6 @@ gem "puma"
 gem "rails", "~> #{ENV['RAILS_VERSION'] || '8.0'}"
 gem "sqlite3", "~> #{ENV['SQLITE_VERSION'] || '2.7'}"
 
+gem "rspec", "~> 3.0"
+
 gem "rubocop", "~> 1.80.1", require: false

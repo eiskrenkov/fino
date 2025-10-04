@@ -8,6 +8,14 @@ module Fino::Setting
   end
 
   module ClassMethods
+    def type_identitfier=(identifier)
+      @type_identitfier = identifier
+    end
+
+    def type_identitfier
+      @type_identitfier
+    end
+
     def serialize(value)
       raise NotImplementedError
     end

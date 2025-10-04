@@ -11,7 +11,7 @@ end
 Fino.configure do
   adapter do
     Fino::Redis::Adapter.new(
-      Redis.new(host: "redis.fino.orb.local"),
+      Redis.new(host: ENV.fetch("FINO_DUMMY_REDIS_HOST", "redis.fino.orb.local")),
       namespace: "fino_dummy"
     )
   end

@@ -3,6 +3,8 @@
 class Fino::Settings::String
   include Fino::Setting
 
+  self.type_identitfier = :string
+
   class << self
     def serialize(value)
       value

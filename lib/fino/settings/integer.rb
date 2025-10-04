@@ -3,6 +3,8 @@
 class Fino::Settings::Integer
   include Fino::Setting
 
+  self.type_identitfier = :integer
+
   class << self
     def serialize(value)
       value.to_s

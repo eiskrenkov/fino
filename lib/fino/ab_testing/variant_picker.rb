@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "zlib"
+
 class Fino::AbTesting::VariantPicker
   SCALING_FACTOR = 1_000
 

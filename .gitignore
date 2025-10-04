@@ -2,3 +2,5 @@ Gemfile.lock
 .bundle
 *.gem
 /node_modules
+
+spec/examples.txt

@@ -23,6 +23,6 @@ class Fino::Expirator
   end
 
   def current_timestamp
-    Time.now.to_i
+    Process.clock_gettime(Process::CLOCK_MONOTONIC, :second)
   end
 end

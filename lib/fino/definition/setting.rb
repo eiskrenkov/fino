@@ -1,6 +1,17 @@
 # frozen_string_literal: true
 
 class Fino::Definition::Setting
+  TYPE_CLASSES = [
+    Fino::Settings::String,
+    Fino::Settings::Integer,
+    Fino::Settings::Float,
+    Fino::Settings::Boolean
+  ].freeze
+
+  SETTING_TYPE_TO_TYPE_CLASS_MAPPING = TYPE_CLASSES.each_with_object({}) do |klass, hash|
+    hash[klass.type_identitfier] = klass
+  end.freeze
+
   attr_reader :setting_name, :section_definition, :type, :options
 
   def initialize(type:, setting_name:, section_definition: nil, **options)
@@ -10,20 +21,10 @@ class Fino::Definition::Setting
     @options = options
   end
 
-  def type_class # rubocop:disable Metrics/MethodLength
-    @type_class ||=
-      case type
-      when :string
-        Fino::Settings::String
-      when :integer
-        Fino::Settings::Integer
-      when :float
-        Fino::Settings::Float
-      when :boolean
-        Fino::Settings::Boolean
-      else
-        raise "Unknown type #{type}"
-      end
+  def type_class
+    @type_class ||= SETTING_TYPE_TO_TYPE_CLASS_MAPPING.fetch(type) do
+      raise ArgumentError, "Unknown setting type #{type}"
+    end
   end
 
   def default

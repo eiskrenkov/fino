@@ -9,15 +9,15 @@ class Fino::Cache::Memory
   end
 
   def exist?(key)
+    expire_if_ready
+
     hash.key?(key)
-  ensure
-    expire_if_needed
   end
 
   def read(key)
+    expire_if_ready
+
     hash[key]
-  ensure
-    expire_if_needed
   end
 
   def write(key, value)
@@ -25,14 +25,20 @@ class Fino::Cache::Memory
   end
 
   def fetch(key, &block)
+    raise ArgumentError, "no block provided to #{self.class.name}#fetch" unless block
+
+    expire_if_ready
+
     hash.fetch(key) do
       write(key, block.call)
     end
-  ensure
-    expire_if_needed
   end
 
-  def fetch_multi(keys, &block)
+  def fetch_multi(*keys, &block)
+    raise ArgumentError, "no block provided to #{self.class.name}#fetch_multi" unless block
+
+    expire_if_ready
+
     missing_keys = keys - hash.keys
 
     if missing_keys.any?
@@ -44,19 +50,21 @@ class Fino::Cache::Memory
     end
 
     hash.values_at(*keys)
-  ensure
-    expire_if_needed
   end
 
   def delete(key)
     hash.delete(key)
   end
 
+  def clear
+    hash.clear
+  end
+
   private
 
   attr_reader :hash, :expirator
 
-  def expire_if_needed
+  def expire_if_ready
     expirator&.when_ready do
       Fino.logger.debug { "Expiring all cache entries" }
       hash.clear
