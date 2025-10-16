@@ -95,8 +95,13 @@ Fino.value(:model, at: :openai, for: "user_2") #=> "gpt-5"
 
 ## Rails integration
 
-Fino comes with a seamless Rails integration which automatically detects when gem is used in Rails context and requires
-all necessary facilities on its own
+Fino easily integrates with Rails. Just add the gem to your Gemfile:
+
+```
+gem "fino-rails", require: false
+```
+
+to get built-in UI engine for your settings!
 
 ### UI engine
 
