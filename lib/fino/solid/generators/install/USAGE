@@ -1,0 +1,8 @@
+Description:
+    Installs Fino::Solid adapter by creating necessary database migration.
+
+Example:
+    bin/rails generate fino:solid:install
+
+    This will create:
+        db/migrate/[timestamp]_create_fino_settings.rb

@@ -91,6 +91,11 @@ Zeitwerk::Loader.for_gem.tap do |l|
       root_relative_path.call("lib/fino/redis.rb"),
       root_relative_path.call("lib/fino/redis/"),
 
+      # Fino Solid
+      root_relative_path.call("lib/fino-solid.rb"),
+      root_relative_path.call("lib/fino/solid.rb"),
+      root_relative_path.call("lib/fino/solid/"),
+
       # Other
       root_relative_path.call("lib/fino/metadata.rb"),
       root_relative_path.call("lib/fino/railtie.rb")

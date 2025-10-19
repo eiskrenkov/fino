@@ -2,6 +2,7 @@
 
 require "fino"
 require "fino-redis"
+require "fino-solid"
 
 Dir["spec/support/**/*.rb"].each { |f| require File.expand_path(f) }
 

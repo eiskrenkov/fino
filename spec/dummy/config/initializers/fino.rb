@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "fino-redis"
+require "fino-solid"
 
 Rails.application.configure do
   config.fino.cache_within_request = false
@@ -11,8 +12,12 @@ end
 $redis = Redis.new(host: ENV.fetch("FINO_DUMMY_REDIS_HOST", "redis.fino.orb.local"))
 
 Fino.configure do
+  # adapter do
+  #   Fino::Redis::Adapter.new($redis, namespace: "fino_dummy")
+  # end
+
   adapter do
-    Fino::Redis::Adapter.new($redis, namespace: "fino_dummy")
+    Fino::Solid::Adapter.new
   end
 
   cache { Fino::Cache::Memory.new(expires_in: 3.seconds) }
