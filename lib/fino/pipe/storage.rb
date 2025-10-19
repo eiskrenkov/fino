@@ -8,11 +8,11 @@ class Fino::Pipe::Storage
   end
 
   def read(setting_definition)
-    to_setting(setting_definition, adapter.read(setting_definition))
+    to_setting(setting_definition, adapter.read(setting_definition.key))
   end
 
   def read_multi(setting_definitions)
-    setting_definitions.zip(adapter.read_multi(setting_definitions)).map do |definition, raw_data|
+    setting_definitions.zip(adapter.read_multi(setting_definitions.map(&:key))).map do |definition, raw_data|
       to_setting(definition, raw_data)
     end
   end

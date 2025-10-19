@@ -8,12 +8,11 @@ Rails.application.configure do
   config.fino.instrument = true
 end
 
+$redis = Redis.new(host: ENV.fetch("FINO_DUMMY_REDIS_HOST", "redis.fino.orb.local"))
+
 Fino.configure do
   adapter do
-    Fino::Redis::Adapter.new(
-      Redis.new(host: ENV.fetch("FINO_DUMMY_REDIS_HOST", "redis.fino.orb.local")),
-      namespace: "fino_dummy"
-    )
+    Fino::Redis::Adapter.new($redis, namespace: "fino_dummy")
   end
 
   cache { Fino::Cache::Memory.new(expires_in: 3.seconds) }

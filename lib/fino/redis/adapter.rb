@@ -6,6 +6,8 @@ class Fino::Redis::Adapter
   using Fino::CustomRedisScripts
 
   DEFAULT_REDIS_NAMESPACE = "fino"
+  SETTINGS_NAMESPACE = "s"
+  PERSISTED_SETTINGS_KEYS_REDIS_KEY = "psl"
   SCOPE_PREFIX = "s"
   VARIANT_PREFIX = "v"
   VALUE_KEY = "v"
@@ -15,12 +17,12 @@ class Fino::Redis::Adapter
     @redis_namespace = namespace
   end
 
-  def read(setting_definition)
-    redis.hgetall(redis_key_for(setting_definition))
+  def read(setting_key)
+    redis.hgetall(redis_key_for(setting_key))
   end
 
-  def read_multi(setting_definitions)
-    keys = setting_definitions.map { |definition| redis_key_for(definition) }
+  def read_multi(setting_keys)
+    keys = setting_keys.map { |setting_key| redis_key_for(setting_key) }
 
     redis.pipelined do |pipeline|
       keys.each { |key| pipeline.hgetall(key) }
@@ -42,7 +44,23 @@ class Fino::Redis::Adapter
       hash["#{VARIANT_PREFIX}/#{variant.percentage}/#{VALUE_KEY}"] = serialize_value.call(variant.value)
     end
 
-    redis.mapped_hreplace(redis_key_for(setting_definition), hash)
+    redis.multi do |r|
+      r.mapped_hreplace(redis_key_for(setting_definition.key), hash)
+      r.sadd(build_redis_key(PERSISTED_SETTINGS_KEYS_REDIS_KEY), setting_definition.key)
+    end
+  end
+
+  def read_persisted_setting_keys
+    redis.smembers(build_redis_key(PERSISTED_SETTINGS_KEYS_REDIS_KEY))
+  end
+
+  def clear(setting_key)
+    _, cleared = redis.multi do |r|
+      r.del(redis_key_for(setting_key))
+      r.srem(build_redis_key(PERSISTED_SETTINGS_KEYS_REDIS_KEY), setting_key)
+    end
+
+    cleared == 1
   end
 
   def fetch_value_from(raw_adapter_data)
@@ -72,7 +90,11 @@ class Fino::Redis::Adapter
 
   attr_reader :redis, :redis_namespace
 
-  def redis_key_for(setting_definition)
-    "#{redis_namespace}:#{setting_definition.path.join(':')}"
+  def redis_key_for(setting_key)
+    build_redis_key(SETTINGS_NAMESPACE, setting_key)
+  end
+
+  def build_redis_key(*parts)
+    [redis_namespace, *parts].join(":")
   end
 end

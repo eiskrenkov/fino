@@ -12,6 +12,10 @@
           </svg>
           Dashboard
         <% end %>
+
+        <%= link_to archive_index_path, class: "flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold #{current_page?(:archive_index) ? 'text-indigo-600' : 'text-gray-700'} hover:bg-gray-100 hover:text-indigo-600" do %>
+          Archive
+        <% end %>
       </div>
 
       <div>

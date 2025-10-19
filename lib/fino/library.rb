@@ -81,6 +81,10 @@ class Fino::Library
     pipeline.read_multi(setting_definitions)
   end
 
+  def persisted_keys
+    adapter.read_persisted_setting_keys
+  end
+
   private
 
   attr_reader :configuration
@@ -97,7 +101,11 @@ class Fino::Library
   end
 
   def storage
-    Fino::Pipe::Storage.new(configuration.adapter_builder_block.call)
+    Fino::Pipe::Storage.new(adapter)
+  end
+
+  def adapter
+    @adapter ||= configuration.adapter_builder_block.call
   end
 
   def cache
