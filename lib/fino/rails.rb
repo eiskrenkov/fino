@@ -26,3 +26,4 @@ module Fino
 end
 
 require "fino/rails/engine"
+require "fino/rails/generators/install/install_generator"

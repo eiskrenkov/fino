@@ -1,0 +1,105 @@
+# frozen_string_literal: true
+
+Rails.application.configure do
+  # Configure fino-rails within this block
+
+  # Whether fino calls should be instrumented. You can implement custom subscribers by subscribing to `fino` namespace
+  config.fino.instrument = Rails.env.development?
+
+  # Fino Rails provides a default log subscriber that logs executed queries and cache hits/misses by subscribing to
+  # `fino` instrumentation namespace
+  #
+  config.fino.log = config.fino.instrument
+
+  # If setting was read from the adapter within Rails request, it will be cached for the duration of that request to
+  # avoid multiple calls to the adapter
+  #
+  config.fino.cache_within_request = true
+
+  # Whether fino should preload all registered settings in the beginning of each request by single adapter call.
+  # Can be set to:
+  #
+  # 1. false - do not preload settings
+  # 2. true - preload all settings before each request
+  # 3. Callable accepting rack request object and returning boolean - preload settings conditionally, e.g:
+  #
+  #    ->(request) {
+  #      case request.path
+  #      when "request/using/all/settings"
+  #        true
+  #      when "request/not/using/settings"
+  #        false
+  #      when "request/using/specific/settings"
+  #        [
+  #          :api_rate_limit,
+  #          openai: [:model, :temperature]
+  #        ]
+  #      end
+  #    }
+  #
+  config.fino.preload_before_request = false
+end
+
+Fino.configure do
+<%- if fino_redis_available? -%>
+  adapter do
+    Fino::Redis::Adapter.new(
+      Redis.new(**Rails.application.config_for(:redis))
+    )
+  end
+<%- elsif fino_solid_available? -%>
+  adapter do
+    Fino::Solid::Adapter.new
+  end
+<%- else -%>
+  adapter do
+    raise "No Fino adapter configured. Use `bundle add fino-solid` for a quick start"
+  end
+<%- end -%>
+
+  # Allows to cache settings between requests
+  #
+  # Memory cache adapter provided out of the box should be used with care as may lead to inconsistencies between
+  # running application instances, but might lead to performance improvements by reducing amount of calls to the adapter
+  #
+  # cache { Fino::Cache::Memory.new(expires_in: 1.minute) }
+
+  settings do
+    # Configure settings within this block
+
+    # Supported data types:
+    #   - string
+    #   - integer
+    #   - float
+    #   - boolean
+
+    # setting :maintenance_mode,
+    #         :boolean,
+    #         default: false,
+    #         description: <<~DESC.strip
+    #           Enable maintenance mode for the system. Users will see a maintenance page when this is enabled
+    #         DESC
+    #
+    # setting :api_rate_limit,
+    #         :integer,
+    #         default: 1000,
+    #         description: "Maximum API requests per minute per user to prevent abuse"
+    #
+    # section :openai, label: "OpenAI" do
+    #   setting :model,
+    #           :string,
+    #           default: "gpt-5",
+    #           description: "OpenAI model"
+    #
+    #   setting :temperature,
+    #           :float,
+    #           default: 0.7,
+    #           description: "Model temperature"
+    # end
+    #
+    # section :feature_toggles, label: "Feature Toggles" do
+    #   setting :new_ui, :boolean, default: true, description: "Enable the new user interface"
+    #   setting :beta_functionality, :boolean, default: false, description: "Enable beta functionality for testing"
+    # end
+  end
+end

@@ -19,7 +19,4 @@ require "fino/solid/setting"
 require "fino/solid/adapter"
 require "fino/solid/railtie" if defined?(Rails::Railtie)
 
-if defined?(Rails) && defined?(Rails::Generators)
-  require "rails/generators"
-  require_relative "solid/generators/install/install_generator"
-end
+require "fino/solid/generators/install/install_generator"

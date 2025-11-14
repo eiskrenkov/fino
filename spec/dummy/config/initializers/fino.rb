@@ -4,6 +4,8 @@ require "fino-redis"
 require "fino-solid"
 
 Rails.application.configure do
+  config.fino.instrument = Rails.env.development?
+  config.fino.log = Rails.env.development?
   config.fino.cache_within_request = false
   config.fino.preload_before_request = true
   config.fino.instrument = true
@@ -12,12 +14,15 @@ end
 $redis = Redis.new(host: ENV.fetch("FINO_DUMMY_REDIS_HOST", "redis.fino.orb.local"))
 
 Fino.configure do
-  # adapter do
-  #   Fino::Redis::Adapter.new($redis, namespace: "fino_dummy")
-  # end
-
-  adapter do
-    Fino::Solid::Adapter.new
+  case ENV["FINO_DUMMY_ADAPTER"]
+  when "redis"
+    adapter do
+      Fino::Redis::Adapter.new($redis, namespace: "fino_dummy")
+    end
+  else
+    adapter do
+      Fino::Solid::Adapter.new
+    end
   end
 
   cache { Fino::Cache::Memory.new(expires_in: 3.seconds) }

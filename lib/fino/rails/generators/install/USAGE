@@ -1,0 +1,12 @@
+Description:
+    Installs Fino Rails integration by creating an initializer file with default configuration.
+    If fino-solid is installed, it will also run the fino:solid:install generator to create the database migration.
+
+Example:
+    bin/rails generate fino:rails:install
+
+    This will create:
+        config/initializers/fino.rb
+
+    If fino-solid is installed, it will also create:
+        db/migrate/[timestamp]_create_fino_settings.rb
