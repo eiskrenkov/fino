@@ -36,6 +36,13 @@
           <div class="truncate text-xl font-semibold text-gray-800">
             "<%= setting.value %>"
           </div>
+        <% when Fino::Settings::Numeric %>
+          <div class="truncate text-xl font-semibold text-gray-800">
+            <%= setting.value %>
+            <% if setting.unit.present? %>
+              <span class="text-base font-medium text-gray-600"><%= setting.unit.short_name %></span>
+            <% end %>
+          </div>
         <% else %>
           <div class="truncate text-xl font-semibold text-gray-800">
             <%= setting.value %>

@@ -28,13 +28,11 @@ class Fino::Definition::Setting
   end
 
   def default
-    return @default if defined?(@default)
-
-    @default = options[:default]
+    defined?(@default) ? @default : @default = options[:default]
   end
 
   def description
-    options[:description]
+    defined?(@description) ? @description : @description = options[:description]
   end
 
   def path

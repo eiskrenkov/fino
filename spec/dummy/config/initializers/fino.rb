@@ -63,8 +63,8 @@ Fino.configure do
               default: false,
               description: "Acts as a circuit breaker for the integration"
 
-      setting :http_read_timeout, :integer, default: 200 # in ms
-      setting :http_open_timeout, :integer, default: 100 # in ms
+      setting :http_read_timeout, :integer, default: 200, unit: :ms
+      setting :http_open_timeout, :integer, default: 100, unit: :ms
 
       setting :max_retries, :integer, default: 3, description: "Maximum number of retries for failed requests"
     end

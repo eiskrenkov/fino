@@ -23,8 +23,6 @@
                         <h2 class="min-w-0 text-sm/6 font-semibold text-gray-900">
                           <span class="whitespace-nowrap"><%= setting.name %></span>
                         </h2>
-
-                        <%= setting_type_label(setting) %>
                       </div>
 
                       <div>
@@ -42,6 +40,13 @@
                         <% when Fino::Settings::String %>
                           <div class="truncate text-xl font-semibold text-gray-800">
                             "<%= setting.value %>"
+                          </div>
+                        <% when Fino::Settings::Numeric %>
+                          <div class="truncate text-xl font-semibold text-gray-800">
+                            <span><%= setting.value %></span>
+                            <% if setting.unit.present? %>
+                              <span class="text-base font-medium text-gray-600"><%= setting.unit.short_name %></span>
+                            <% end %>
                           </div>
                         <% else %>
                           <div class="truncate text-xl font-semibold text-gray-800">

@@ -2,6 +2,7 @@
 
 class Fino::Settings::Float
   include Fino::Setting
+  include Fino::Settings::Numeric
 
   self.type_identifier = :float
 
