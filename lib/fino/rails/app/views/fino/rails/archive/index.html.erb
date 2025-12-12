@@ -1,4 +1,4 @@
-<div class="p-3">
+<div class="p-4">
   <div class="border-b border-gray-200 pb-3 sm:flex sm:items-center sm:justify-between">
     <h3 class="text-base font-semibold text-gray-900">Archive</h3>
 
@@ -11,10 +11,10 @@
 
   <div class="container mx-auto pt-3">
     <% if @archived_setting_keys.empty? %>
-      <div class="outline outline-gray-200 rounded-xl">
-        <div class="p-3 text-center">
+      <div class="outline outline-gray-200 rounded-lg">
+        <div class="p-4 text-center">
           <h1 class="text-gray-900 font-semibold text-lg">There are no archived settings</h1>
-          <p class="text-gray-500">Setting becomes archived when you remove its definition from Fino configuration block</p>
+          <p class="text-gray-500 text-sm">Setting becomes archived when you remove its definition from Fino configuration block</p>
         </div>
       </div>
     <% else %>

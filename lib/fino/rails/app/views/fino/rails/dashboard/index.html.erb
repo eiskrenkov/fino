@@ -4,9 +4,13 @@
   <%= render "fino/rails/common/topbar" %>
 <% end %>
 
-<div class="p-3">
-  <div class="flex flex-col gap-y-3">
-    <%= render "fino/rails/common/flash"  %>
+<div class="p-4">
+  <div class="border-b border-gray-200 pb-3 sm:flex sm:items-center sm:justify-between">
+    <h3 class="text-base font-semibold text-gray-900">Dashboard</h3>
+  </div>
+
+  <div class="flex flex-col gap-y-3 pt-3">
+    <%= render "fino/rails/common/flash" %>
 
     <% @settings.group_by { |setting| setting.definition.section_definition&.label || "General" }.each do |section_label, settings| %>
       <div class="mb-5">
