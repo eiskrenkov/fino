@@ -28,7 +28,7 @@ class Fino::Definition::Setting
   end
 
   def default
-    defined?(@default) ? @default : @default = options[:default]
+    defined?(@default) ? @default : @default = type_class.deserialize(options[:default])
   end
 
   def description
