@@ -74,6 +74,8 @@ Fino.set(model: "gpt-5", at: :openai, overrides: { "qa" => "our_local_model_not_
 
 Fino.value(:model, at: :openai) #=> "gpt-5"
 Fino.value(:model, at: :openai, for: "qa") #=> "our_local_model_not_to_pay_to_sam_altman"
+
+Fino.setting(:model, at: :openai).overrides #=> { "qa" => "our_local_model_not_to_pay_to_sam_altman" }
 ```
 
 ### A/B testing
