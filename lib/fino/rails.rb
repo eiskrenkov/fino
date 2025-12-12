@@ -11,10 +11,14 @@ module Fino
     module RequestScopedCache
       autoload :Pipe, "fino/rails/request_scoped_cache/pipe"
       autoload :Middleware, "fino/rails/request_scoped_cache/middleware"
+      autoload :Store, "fino/rails/request_scoped_cache/store"
     end
 
+    autoload :Instrumentation, "fino/rails/instrumentation"
+
     module Instrumentation
-      autoload :Pipe, "fino/rails/instrumentation/pipe"
+      autoload :Adapter, "fino/rails/instrumentation/adapter"
+      autoload :Cache, "fino/rails/instrumentation/cache"
     end
   end
 

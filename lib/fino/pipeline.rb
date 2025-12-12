@@ -8,26 +8,20 @@ class Fino::Pipeline
   def initialize(storage, pipes = [])
     @storage = storage
     @pipes = pipes
-    @pipe_wrapper = ->(pipe) { pipe }
   end
 
-  def use(pipe_class, *args, **kwargs, &block)
-    pipes << ->(pipe) { pipe_class.new(pipe, *args, **kwargs, &block) }
-    @pipeline = nil
-  end
-
-  def wrap(&block)
-    @pipe_wrapper = block
+  def use(pipe_class, ...)
+    pipes << ->(pipe) { pipe_class.new(pipe, ...) }
     @pipeline = nil
   end
 
   private
 
-  attr_reader :storage, :pipes, :pipe_wrapper
+  attr_reader :storage, :pipes
 
   def pipeline
-    @pipeline ||= pipes.inject(pipe_wrapper.call(storage)) do |pipe, builder|
-      pipe_wrapper.call(builder.call(pipe))
+    @pipeline ||= pipes.inject(storage) do |pipe, builder|
+      builder.call(pipe)
     end
   end
 end

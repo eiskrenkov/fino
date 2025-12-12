@@ -10,8 +10,7 @@ module Fino
     end
 
     def reset!
-      Thread.current[:fino_library] = nil
-
+      @library = nil
       @registry = nil
       @configuration = nil
     end
@@ -22,7 +21,7 @@ module Fino
     end
 
     def library
-      Thread.current[:fino_library] ||= Fino::Library.new(configuration)
+      @library ||= Fino::Library.new(configuration)
     end
 
     def registry

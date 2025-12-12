@@ -61,13 +61,17 @@ class Fino::Rails::Engine < Rails::Engine
 
     Fino.configure do
       pipeline do
-        if config.instrument
-          wrap do |pipe|
-            Fino::Rails::Instrumentation::Pipe.new(pipe)
-          end
+        use Fino::Rails::RequestScopedCache::Pipe if defined?(Rails::Server) && config.cache_within_request
+      end
+
+      if config.instrument
+        wrap_adapter do |adapter|
+          Fino::Rails::Instrumentation::Adapter.new(adapter)
         end
 
-        use Fino::Rails::RequestScopedCache::Pipe if defined?(Rails::Server) && config.cache_within_request
+        wrap_cache do |cache|
+          Fino::Rails::Instrumentation::Cache.new(cache)
+        end
       end
     end
   end
@@ -76,10 +80,19 @@ class Fino::Rails::Engine < Rails::Engine
     config = app.config.fino
 
     if defined?(Rails::Server)
-      app.middleware.use Fino::Rails::RequestScopedCache::Middleware if config.cache_within_request
+      if config.cache_within_request
+        cache_wrapper_block = if config.instrument
+                                proc { |cache| Fino::Rails::Instrumentation::Cache.new(cache) }
+                              else
+                                proc { |cache| cache }
+                              end
+
+        app.middleware.use Fino::Rails::RequestScopedCache::Middleware, cache_wrapper_block: cache_wrapper_block
+      end
 
       if config.preload_before_request
-        app.middleware.use Fino::Rails::Preloading::Middleware, preload: config.preload_before_request
+        app.middleware.use Fino::Rails::Preloading::Middleware,
+                           preload: config.preload_before_request
       end
     end
   end

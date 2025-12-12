@@ -3,16 +3,18 @@
 class Fino::Rails::RequestScopedCache::Pipe
   include Fino::Pipe
 
-  def self.with_temporary_cache
-    Thread.current[:fino_request_scoped_cache] = Fino::Cache::Memory.new(expires_in: nil)
+  def self.with_temporary_cache(cache_wrapper_block)
+    Thread.current[:fino_request_scoped_cache] = cache_wrapper_block.call(Fino::Rails::RequestScopedCache::Store.new)
     yield
   ensure
     Thread.current[:fino_request_scoped_cache] = nil
   end
 
   def read(setting_definition)
-    cache.fetch(setting_definition.key) do
-      pipe.read(setting_definition)
+    return cache.read(setting_definition.key) if cache.exist?(setting_definition.key)
+
+    pipe.read(setting_definition).tap do |result|
+      cache.write(setting_definition.key, result)
     end
   end
 

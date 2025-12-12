@@ -6,8 +6,8 @@ require "fino-solid"
 Rails.application.configure do
   config.fino.instrument = Rails.env.development?
   config.fino.log = Rails.env.development?
-  config.fino.cache_within_request = false
-  config.fino.preload_before_request = true
+  config.fino.cache_within_request = true
+  config.fino.preload_before_request = false
   config.fino.instrument = true
 end
 
