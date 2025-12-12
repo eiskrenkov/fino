@@ -13,7 +13,7 @@ module Fino::Cache
     raise NotImplementedError
   end
 
-  def fetch(key, &)
+  def fetch(key, &block)
     raise NotImplementedError
   end
 

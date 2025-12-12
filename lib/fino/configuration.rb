@@ -19,7 +19,7 @@ class Fino::Configuration
     @pipeline_builder_block = block
   end
 
-  def settings(&)
-    Fino::Registry::DSL.new(registry).instance_eval(&)
+  def settings(&block)
+    Fino::Registry::DSL.new(registry).instance_eval(&block)
   end
 end
