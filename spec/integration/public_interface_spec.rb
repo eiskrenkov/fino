@@ -32,6 +32,11 @@ RSpec.describe "Public interface", type: :integration do
                   default: 0.7,
                   description: "Model temperature"
         end
+
+        section :external_api, label: "External API" do
+          setting :http_read_timeout, :integer, default: 200, unit: :ms
+          setting :http_open_timeout, :integer, default: 1, unit: :sec
+        end
       end
     end
   end
@@ -174,6 +179,58 @@ RSpec.describe "Public interface", type: :integration do
         expect(Fino.value(:api_rate_limit, for: "user_5")).to eq(3000)
       end
     end
+
+    describe "unit conversion" do
+      it "converts milliseconds to seconds" do
+        setting = Fino.setting(:http_read_timeout, at: :external_api)
+
+        expect(setting.value).to eq(200)
+        expect(setting.value(unit: :seconds)).to eq(0.2)
+        expect(setting.value(unit: :sec)).to eq(0.2)
+      end
+
+      it "converts seconds to milliseconds" do
+        setting = Fino.setting(:http_open_timeout, at: :external_api)
+
+        expect(setting.value).to eq(1)
+        expect(setting.value(unit: :ms)).to eq(1000)
+        expect(setting.value(unit: :milliseconds)).to eq(1000)
+      end
+
+      it "converts updated values correctly" do
+        Fino.set(http_read_timeout: 500, at: :external_api)
+        setting = Fino.setting(:http_read_timeout, at: :external_api)
+
+        expect(setting.value(unit: :seconds)).to eq(0.5)
+      end
+
+      it "returns same value when converting to same unit" do
+        setting = Fino.setting(:http_read_timeout, at: :external_api)
+
+        expect(setting.value(unit: :ms)).to eq(setting.value)
+      end
+
+      it "converts overridden values correctly" do
+        Fino.set(
+          http_read_timeout: 200,
+          at: :external_api,
+          overrides: { "slow_client" => 5000 }
+        )
+        setting = Fino.setting(:http_read_timeout, at: :external_api)
+
+        expect(setting.value(unit: :seconds)).to eq(0.2)
+        expect(setting.value(for: "slow_client", unit: :seconds)).to eq(5.0)
+      end
+
+      it "raises error when setting has no unit" do
+        setting = Fino.setting(:api_rate_limit)
+
+        expect { setting.value(unit: :seconds) }.to raise_error(
+          ArgumentError,
+          "No unit defined for this setting"
+        )
+      end
+    end
   end
 
   describe "#values" do
@@ -304,7 +361,9 @@ RSpec.describe "Public interface", type: :integration do
             "maintenance_mode",
             "api_rate_limit",
             "openai/model",
-            "openai/temperature"
+            "openai/temperature",
+            "external_api/http_read_timeout",
+            "external_api/http_open_timeout"
           ]
         )
       end
