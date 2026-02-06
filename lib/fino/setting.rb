@@ -79,6 +79,14 @@ module Fino::Setting
     definition.description
   end
 
+  def overriden?
+    !overrides.empty?
+  end
+
+  def ab_tested?
+    !!experiment
+  end
+
   private
 
   def inspectable_attributes
@@ -88,8 +96,8 @@ module Fino::Setting
       default: default,
       global_value: global_value
     }.tap do |attributes|
-      attributes[:overrides] = overrides if overrides.present?
-      attributes[:experiment] = experiment if experiment
+      attributes[:overrides] = overrides if overriden?
+      attributes[:experiment] = experiment if ab_tested?
     end
   end
 end
