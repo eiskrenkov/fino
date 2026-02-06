@@ -39,6 +39,8 @@ module Fino
     def_delegators :library,
                    :value,
                    :values,
+                   :enabled?,
+                   :disabled?,
                    :setting,
                    :settings,
                    :slice,

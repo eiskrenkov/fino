@@ -17,4 +17,12 @@ class Fino::Settings::Boolean
       end
     end
   end
+
+  def enabled?(**context)
+    value(**context)
+  end
+
+  def disabled?(**context)
+    !enabled?(**context)
+  end
 end

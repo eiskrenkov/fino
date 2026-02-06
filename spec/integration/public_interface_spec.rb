@@ -276,6 +276,36 @@ RSpec.describe "Public interface", type: :integration do
     end
   end
 
+  describe "#enabled? / #disabled?" do
+    it "returns correct values for boolean settings" do
+      Fino.set(maintenance_mode: true)
+      setting = Fino.setting(:maintenance_mode)
+
+      expect(setting.enabled?).to eq(true)
+      expect(setting.disabled?).to eq(false)
+    end
+
+    it "respects overrides" do
+      Fino.set(maintenance_mode: false, overrides: { "staging" => true })
+      setting = Fino.setting(:maintenance_mode)
+
+      expect(setting.enabled?).to eq(false)
+      expect(setting.enabled?(for: "staging")).to eq(true)
+      expect(setting.enabled?(for: "production")).to eq(false)
+
+      expect(setting.disabled?).to eq(true)
+      expect(setting.disabled?(for: "staging")).to eq(false)
+      expect(setting.disabled?(for: "production")).to eq(true)
+    end
+
+    it "raises NoMethodError for non-boolean settings" do
+      setting = Fino.setting(:api_rate_limit)
+
+      expect { setting.enabled? }.to raise_error(NoMethodError)
+      expect { setting.disabled? }.to raise_error(NoMethodError)
+    end
+  end
+
   describe "#setting" do
     before do
       Fino.set(
