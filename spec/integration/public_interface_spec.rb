@@ -78,16 +78,16 @@ RSpec.describe "Public interface", type: :integration do
     describe "#add_override" do
       context "when adding overrides incrementally" do
         before do
-          Fino.set(maintenance_mode: false, overrides: { "qa" => true })
+          Fino.set(maintenance_mode: true, overrides: { "qa" => false })
         end
 
         it "appends new overrides without replacing existing ones" do
-          Fino.add_override(:maintenance_mode, "staging" => true)
+          Fino.add_override(:maintenance_mode, "admin" => false)
 
-          expect(Fino.value(:maintenance_mode)).to eq(false)
-          expect(Fino.value(:maintenance_mode, for: "qa")).to eq(true)
-          expect(Fino.value(:maintenance_mode, for: "staging")).to eq(true)
-          expect(Fino.value(:maintenance_mode, for: "production")).to eq(false)
+          expect(Fino.value(:maintenance_mode)).to eq(true)
+          expect(Fino.value(:maintenance_mode, for: "qa")).to eq(false)
+          expect(Fino.value(:maintenance_mode, for: "admin")).to eq(false)
+          expect(Fino.value(:maintenance_mode, for: "payers")).to eq(true)
         end
       end
 
@@ -101,11 +101,11 @@ RSpec.describe "Public interface", type: :integration do
         end
 
         it "preserves global value, existing overrides, and experiment" do
-          Fino.add_override(:api_rate_limit, "staging" => 2000)
+          Fino.add_override(:api_rate_limit, "admin" => 2000)
 
           expect(Fino.value(:api_rate_limit)).to eq(1000)
           expect(Fino.value(:api_rate_limit, for: "qa")).to eq(1500)
-          expect(Fino.value(:api_rate_limit, for: "staging")).to eq(2000)
+          expect(Fino.value(:api_rate_limit, for: "admin")).to eq(2000)
 
           setting = Fino.setting(:api_rate_limit)
           expect(setting.experiment).not_to eq(nil)
@@ -119,11 +119,11 @@ RSpec.describe "Public interface", type: :integration do
         end
 
         it "adds override to sectioned setting" do
-          Fino.add_override(:model, at: :openai, "staging" => "gpt-5")
+          Fino.add_override(:model, at: :openai, "admin" => "gpt-2000")
 
           expect(Fino.value(:model, at: :openai)).to eq("gpt-6")
           expect(Fino.value(:model, at: :openai, for: "qa")).to eq("self-hosted-model")
-          expect(Fino.value(:model, at: :openai, for: "staging")).to eq("gpt-5")
+          expect(Fino.value(:model, at: :openai, for: "admin")).to eq("gpt-2000")
         end
       end
     end
@@ -339,16 +339,16 @@ RSpec.describe "Public interface", type: :integration do
     end
 
     it "respects overrides" do
-      Fino.set(maintenance_mode: false, overrides: { "staging" => true })
+      Fino.set(maintenance_mode: true, overrides: { "qa" => false })
       setting = Fino.setting(:maintenance_mode)
 
-      expect(setting.enabled?).to eq(false)
-      expect(setting.enabled?(for: "staging")).to eq(true)
-      expect(setting.enabled?(for: "production")).to eq(false)
+      expect(setting.enabled?).to eq(true)
+      expect(setting.enabled?(for: "qa")).to eq(false)
+      expect(setting.enabled?(for: "admin")).to eq(true)
 
-      expect(setting.disabled?).to eq(true)
-      expect(setting.disabled?(for: "staging")).to eq(false)
-      expect(setting.disabled?(for: "production")).to eq(true)
+      expect(setting.disabled?).to eq(false)
+      expect(setting.disabled?(for: "qa")).to eq(true)
+      expect(setting.disabled?(for: "admin")).to eq(false)
     end
 
     it "raises NoMethodError for non-boolean settings" do
