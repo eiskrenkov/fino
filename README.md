@@ -71,9 +71,14 @@ Fino.value(:model, at: :openai) #=> "gpt-5"
 Fino.enabled?(:maintenance_mode) #=> false
 Fino.disabled?(:maintenance_mode) #=> true
 
+# Overrides
 Fino.enabled?(:maintenance_mode, for: "qa") #=> false
-Fino.add_override(:maintenance_mode, "qa" => true)
+
+Fino.enable(:maintenance_mode, for: "qa")
 Fino.enabled?(:maintenance_mode, for: "qa") #=> true
+
+Fino.disable(:maintenance_mode, for: "qa")
+Fino.enabled?(:maintenance_mode, for: "qa") #=> false
 ```
 
 ### Overrides
