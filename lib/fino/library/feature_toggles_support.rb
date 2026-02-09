@@ -15,18 +15,30 @@ module Fino::Library::FeatureTogglesSupport
     setting.disabled?(**context)
   end
 
-  def enable(setting_name, for:, at: nil)
+  def enable(setting_name, at: nil, for: nil)
     setting_definition = build_setting_definition(setting_name, at: at)
     ensure_setting_is_boolean!(setting_definition)
 
-    add_override(setting_name, at: at, binding.local_variable_get(:for) => true)
+    scope = binding.local_variable_get(:for)
+
+    if scope
+      add_override(setting_name, at: at, scope => true)
+    else
+      set(setting_name => true, at: at)
+    end
   end
 
-  def disable(setting_name, for:, at: nil)
+  def disable(setting_name, at: nil, for: nil)
     setting_definition = build_setting_definition(setting_name, at: at)
     ensure_setting_is_boolean!(setting_definition)
 
-    add_override(setting_name, at: at, binding.local_variable_get(:for) => false)
+    scope = binding.local_variable_get(:for)
+
+    if scope
+      add_override(setting_name, at: at, scope => false)
+    else
+      set(setting_name => false, at: at)
+    end
   end
 
   private

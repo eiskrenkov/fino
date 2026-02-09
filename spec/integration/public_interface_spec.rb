@@ -398,6 +398,38 @@ RSpec.describe "Public interface", type: :integration do
         "Setting api_rate_limit is not a boolean"
       )
     end
+
+    context "without for: argument" do
+      it "enables globally, discarding overrides and A/B tests" do
+        Fino.set(
+          maintenance_mode: false,
+          overrides: { "qa" => true },
+          variants: { 30.0 => true }
+        )
+
+        Fino.enable(:maintenance_mode)
+
+        setting = Fino.setting(:maintenance_mode)
+        expect(setting.value).to eq(true)
+        expect(setting.overrides).to be_empty
+        expect(setting.experiment).to eq(nil)
+      end
+
+      it "disables globally, discarding overrides and A/B tests" do
+        Fino.set(
+          maintenance_mode: true,
+          overrides: { "qa" => false },
+          variants: { 30.0 => false }
+        )
+
+        Fino.disable(:maintenance_mode)
+
+        setting = Fino.setting(:maintenance_mode)
+        expect(setting.value).to eq(false)
+        expect(setting.overrides).to be_empty
+        expect(setting.experiment).to eq(nil)
+      end
+    end
   end
 
   describe "#setting" do
