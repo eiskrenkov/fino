@@ -75,6 +75,59 @@ RSpec.describe "Public interface", type: :integration do
       end
     end
 
+    describe "#add_override" do
+      context "when adding overrides incrementally" do
+        before do
+          Fino.set(maintenance_mode: false, overrides: { "qa" => true })
+        end
+
+        it "appends new overrides without replacing existing ones" do
+          Fino.add_override(:maintenance_mode, "staging" => true)
+
+          expect(Fino.value(:maintenance_mode)).to eq(false)
+          expect(Fino.value(:maintenance_mode, for: "qa")).to eq(true)
+          expect(Fino.value(:maintenance_mode, for: "staging")).to eq(true)
+          expect(Fino.value(:maintenance_mode, for: "production")).to eq(false)
+        end
+      end
+
+      context "when combined with A/B testing" do
+        before do
+          Fino.set(
+            api_rate_limit: 1000,
+            overrides: { "qa" => 1500 },
+            variants: { 30.0 => 3000, 20.0 => 4000 }
+          )
+        end
+
+        it "preserves global value, existing overrides, and experiment" do
+          Fino.add_override(:api_rate_limit, "staging" => 2000)
+
+          expect(Fino.value(:api_rate_limit)).to eq(1000)
+          expect(Fino.value(:api_rate_limit, for: "qa")).to eq(1500)
+          expect(Fino.value(:api_rate_limit, for: "staging")).to eq(2000)
+
+          setting = Fino.setting(:api_rate_limit)
+          expect(setting.experiment).not_to eq(nil)
+          expect(setting.experiment.variants.size).to eq(3)
+        end
+      end
+
+      context "with sectioned settings" do
+        before do
+          Fino.set(model: "gpt-6", at: :openai, overrides: { "qa" => "self-hosted-model" })
+        end
+
+        it "adds override to sectioned setting" do
+          Fino.add_override(:model, at: :openai, "staging" => "gpt-5")
+
+          expect(Fino.value(:model, at: :openai)).to eq("gpt-6")
+          expect(Fino.value(:model, at: :openai, for: "qa")).to eq("self-hosted-model")
+          expect(Fino.value(:model, at: :openai, for: "staging")).to eq("gpt-5")
+        end
+      end
+    end
+
     describe "A/B testing" do
       context "when no experiment is set" do
         before do

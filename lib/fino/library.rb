@@ -48,6 +48,25 @@ class Fino::Library
     pipeline.read_multi(setting_definitions)
   end
 
+  def add_override(setting_name, at: nil, **overrides)
+    setting_definition = build_setting_definition(setting_name, at: at)
+    current_setting = pipeline.read(setting_definition)
+
+    deserialized_overrides = overrides.transform_values { |v| setting_definition.type_class.deserialize(v) }
+    merged_overrides = current_setting.overrides.merge(deserialized_overrides)
+
+    variants = current_setting.experiment&.variants || []
+
+    pipeline.write(
+      setting_definition,
+      current_setting.global_value,
+      merged_overrides,
+      variants
+    )
+
+    true
+  end
+
   def set(**data)
     at = data.delete(:at)
     raw_overrides = data.delete(:overrides) || {}
@@ -74,6 +93,8 @@ class Fino::Library
       overrides,
       experiment.variants
     )
+
+    true
   end
 
   def slice(*settings)

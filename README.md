@@ -46,8 +46,8 @@ Fino.configure do
     end
 
     section :my_micro_service, label: "My Micro Service" do
-      setting :http_read_timeout, :integer, default: 200 # in ms
-      setting :http_open_timeout, :integer, default: 100 # in ms
+      setting :http_read_timeout, :integer, unit: :ms, default: 200
+      setting :http_open_timeout, :integer, unit: :ms, default: 100
     end
   end
 end
@@ -65,6 +65,17 @@ Fino.set(model: "gpt-5", at: :openai)
 Fino.value(:model, at: :openai) #=> "gpt-5"
 ```
 
+### Feature toggles
+
+```ruby
+Fino.enabled?(:maintenance_mode) #=> false
+Fino.disabled?(:maintenance_mode) #=> true
+
+Fino.enabled?(:maintenance_mode, for: "qa") #=> false
+Fino.add_override(:maintenance_mode, "qa" => true)
+Fino.enabled?(:maintenance_mode, for: "qa") #=> true
+```
+
 ### Overrides
 
 ```ruby
@@ -76,6 +87,9 @@ Fino.value(:model, at: :openai) #=> "gpt-5"
 Fino.value(:model, at: :openai, for: "qa") #=> "our_local_model_not_to_pay_to_sam_altman"
 
 Fino.setting(:model, at: :openai).overrides #=> { "qa" => "our_local_model_not_to_pay_to_sam_altman" }
+
+Fino.add_override(:model, at: :openai, "admin" => "gpt-2000")
+Fino.setting(:model, at: :openai).overrides #=> { "qa" => "our_local_model_not_to_pay_to_sam_altman", "admin" => "gpt-2000" }
 ```
 
 ### A/B testing
@@ -93,6 +107,31 @@ Fino.value(:model, at: :openai, for: "user_1") #=> "gpt-6"
 Fino.value(:model, at: :openai, for: "user_1") #=> "gpt-6"
 
 Fino.value(:model, at: :openai, for: "user_2") #=> "gpt-5"
+```
+
+### Unit conversion
+
+Fino is able to convert numeric settings into various units
+
+```ruby
+Fino.configure do
+  # ...
+
+  settings do
+    section :my_micro_service, label: "My Micro Service" do
+      setting :http_read_timeout,
+              :integer,
+              unit: :ms, # When you define setting, specify unit (e.g ms/sec) to later be able to convert it
+              default: 200
+    end
+  end
+end
+
+Fino.value(:http_read_timeout, at: :my_micro_service) #=> 200
+
+# Convert from ms to sec on the fly
+Fino.value(:http_read_timeout, at: :my_micro_service, unit: :sec) #=> 0.2
+Fino.setting(:http_read_timeout, at: :my_micro_service).value(unit: :sec) #=> 0.2
 ```
 
 ## Rails integration

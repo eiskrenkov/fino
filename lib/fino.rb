@@ -44,7 +44,8 @@ module Fino
                    :setting,
                    :settings,
                    :slice,
-                   :set
+                   :set,
+                   :add_override
 
     def library
       raise NotImplementedError
