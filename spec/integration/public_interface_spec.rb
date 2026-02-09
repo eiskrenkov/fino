@@ -359,6 +359,47 @@ RSpec.describe "Public interface", type: :integration do
     end
   end
 
+  describe "#enable / #disable" do
+    it "enables a boolean setting for a specific scope" do
+      Fino.set(maintenance_mode: false)
+
+      Fino.enable(:maintenance_mode, for: "qa")
+
+      expect(Fino.value(:maintenance_mode)).to eq(false)
+      expect(Fino.value(:maintenance_mode, for: "qa")).to eq(true)
+    end
+
+    it "disables a boolean setting for a specific scope" do
+      Fino.set(maintenance_mode: true)
+
+      Fino.disable(:maintenance_mode, for: "qa")
+
+      expect(Fino.value(:maintenance_mode)).to eq(true)
+      expect(Fino.value(:maintenance_mode, for: "qa")).to eq(false)
+    end
+
+    it "preserves existing overrides" do
+      Fino.set(maintenance_mode: false, overrides: { "staging" => true })
+
+      Fino.enable(:maintenance_mode, for: "qa")
+
+      expect(Fino.value(:maintenance_mode, for: "staging")).to eq(true)
+      expect(Fino.value(:maintenance_mode, for: "qa")).to eq(true)
+    end
+
+    it "raises ArgumentError for non-boolean settings" do
+      expect { Fino.enable(:api_rate_limit, for: "qa") }.to raise_error(
+        ArgumentError,
+        "Setting api_rate_limit is not a boolean"
+      )
+
+      expect { Fino.disable(:api_rate_limit, for: "qa") }.to raise_error(
+        ArgumentError,
+        "Setting api_rate_limit is not a boolean"
+      )
+    end
+  end
+
   describe "#setting" do
     before do
       Fino.set(

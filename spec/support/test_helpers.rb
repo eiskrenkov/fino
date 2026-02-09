@@ -8,7 +8,10 @@ module TestHelpers
   end
 
   def redis
-    @redis ||= Redis.new(host: ENV.fetch("FINO_TEST_REDIS_HOST", "redis.fino.orb.local"))
+    @redis ||= Redis.new(
+      host: ENV.fetch("FINO_TEST_REDIS_HOST", "redis.fino.orb.local"),
+      db: ENV.fetch("FINO_TEST_REDIS_DB", "15").to_i
+    )
   end
 
   def adapter

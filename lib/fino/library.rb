@@ -3,6 +3,8 @@
 require "forwardable"
 
 class Fino::Library
+  include FeatureTogglesSupport
+
   def initialize(configuration)
     @configuration = configuration
   end
@@ -13,20 +15,6 @@ class Fino::Library
 
   def values(*setting_names, at: nil, **context)
     settings(*setting_names, at: at).map { |s| s.value(**context) }
-  end
-
-  def enabled?(setting_name, at: nil, **context)
-    setting = setting(setting_name, at: at)
-    raise ArgumentError, "Setting #{setting_name} is not a boolean" unless setting.instance_of?(Fino::Settings::Boolean)
-
-    setting.enabled?(**context)
-  end
-
-  def disabled?(setting_name, at: nil, **context)
-    setting = setting(setting_name, at: at)
-    raise ArgumentError, "Setting #{setting_name} is not a boolean" unless setting.instance_of?(Fino::Settings::Boolean)
-
-    setting.disabled?(**context)
   end
 
   def setting(setting_name, at: nil)

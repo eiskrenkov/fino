@@ -41,6 +41,8 @@ module Fino
                    :values,
                    :enabled?,
                    :disabled?,
+                   :enable,
+                   :disable,
                    :setting,
                    :settings,
                    :slice,
