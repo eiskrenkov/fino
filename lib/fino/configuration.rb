@@ -20,15 +20,17 @@ class Fino::Configuration
   end
 
   def cache_builder_block
-    @wrapped_cache_builder_block || @cache_builder_block
+    @cache_builder_block && (@wrapped_cache_builder_block || @cache_builder_block)
   end
 
-  def cache(&block)
+  def cache(if: -> { true }, &block)
+    return unless binding.local_variable_get(:if).call
+
     @cache_builder_block = block
   end
 
   def wrap_cache(&block)
-    @wrapped_cache_builder_block = proc { block.call(@cache_builder_block.call) }
+    @wrapped_cache_builder_block = proc { block.call(@cache_builder_block&.call) }
   end
 
   def pipeline(&block)
