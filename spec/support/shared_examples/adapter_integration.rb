@@ -33,6 +33,24 @@ RSpec.shared_examples "fino adapter integration" do
         it { expect(Fino.value(:maintenance_mode, for: "qa")).to eq(true) }
         it { expect(Fino.value(:maintenance_mode, for: "admin")).to eq(false) }
       end
+
+      context "when scope name contains slashes" do
+        before do
+          Fino.set(
+            api_rate_limit: 1000,
+            overrides: {
+              "org/team/user" => 2000,
+              "org/other" => 3000
+            }
+          )
+        end
+
+        it "correctly stores and retrieves slash-delimited scopes" do
+          expect(Fino.value(:api_rate_limit, for: "org/team/user")).to eq(2000)
+          expect(Fino.value(:api_rate_limit, for: "org/other")).to eq(3000)
+          expect(Fino.value(:api_rate_limit, for: "org")).to eq(1000)
+        end
+      end
     end
 
     describe "A/B testing" do

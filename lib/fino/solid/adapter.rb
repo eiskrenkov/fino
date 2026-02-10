@@ -57,7 +57,7 @@ module Fino
         raw_adapter_data.each_with_object({}) do |(key, value), memo|
           next unless key.start_with?("#{SCOPE_PREFIX}/")
 
-          scope = key.split("/", 3)[1]
+          scope = key.delete_prefix("#{SCOPE_PREFIX}/").delete_suffix("/#{VALUE_KEY}")
           memo[scope] = value
         end
       end
