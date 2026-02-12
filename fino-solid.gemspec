@@ -23,16 +23,15 @@ Gem::Specification.new do |spec|
     "README.md",
     "LICENSE",
     "lib/fino/version.rb",
-
     "lib/fino-solid.rb",
     "lib/fino/solid.rb",
     "lib/fino/solid/**/*"
   ]
 
-  spec.add_dependency "fino", "~> #{Fino::VERSION}"
   spec.add_dependency "activerecord", ">= 6.1"
+  spec.add_dependency "fino", "~> #{Fino::VERSION}"
 
-  spec.add_development_dependency "sqlite3", ">= 1.4"
-  spec.add_development_dependency "pg", ">= 1.0"
   spec.add_development_dependency "mysql2", ">= 0.5"
+  spec.add_development_dependency "pg", ">= 1.0"
+  spec.add_development_dependency "sqlite3", ">= 1.4"
 end

@@ -74,7 +74,7 @@ RSpec.describe Fino::Cache::Memory do
       expect(subject.read("key_3")).to eq(nil)
 
       subject.fetch_multi("key_1", "key_2", "key_3") do |missing_keys|
-        expect(missing_keys).to eq(["key_2", "key_3"])
+        expect(missing_keys).to eq(%w[key_2 key_3])
         [["key_2", 2], ["key_3", 3]]
       end
 
@@ -177,7 +177,7 @@ RSpec.describe Fino::Cache::Memory do
         .and_return(current_timestamp + (ttl * 10))
 
       subject.fetch_multi("key_1", "key_2") do |missing_keys|
-        expect(missing_keys).to eq(["key_1", "key_2"])
+        expect(missing_keys).to eq(%w[key_1 key_2])
         missing_keys.zip([1, 2])
       end
     end

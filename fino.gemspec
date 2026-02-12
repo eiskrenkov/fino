@@ -34,7 +34,7 @@ Gem::Specification.new do |spec|
   spec.files = Dir[
     "README.md",
     "LICENSE",
-    "lib/**/*.rb",
+    "lib/**/*.rb"
   ] - Dir[*SUBGEMS_FILES]
 
   spec.add_dependency "zeitwerk", "~> 2.5"

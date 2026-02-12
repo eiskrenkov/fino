@@ -6,7 +6,7 @@ module Fino::Rails::SettingsHelper
     boolean: "blue",
     integer: "yellow",
     float: "purple"
-  }
+  }.freeze
 
   def setting_type_label(setting)
     color = SETTING_TYPE_TO_COLOR_MAPPING.fetch(setting.type, "gray")

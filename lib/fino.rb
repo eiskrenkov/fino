@@ -5,8 +5,8 @@ require "zeitwerk"
 
 module Fino
   module Stateful
-    def configure(&block)
-      configuration.instance_eval(&block)
+    def configure(&)
+      configuration.instance_eval(&)
     end
 
     def reset!
@@ -15,9 +15,9 @@ module Fino
       @configuration = nil
     end
 
-    def reconfigure(&block)
+    def reconfigure(&)
       reset!
-      configure(&block)
+      configure(&)
     end
 
     def library
@@ -68,7 +68,7 @@ module Fino
       Logger.new($stdout).tap do |l|
         l.progname = name
         l.level = ENV.fetch("FINO_LOG_LEVEL", "info")
-        l.formatter = proc do |severity, datetime, progname, msg|
+        l.formatter = proc do |severity, _datetime, progname, msg|
           "[#{progname}] #{severity}: #{msg}\n"
         end
       end

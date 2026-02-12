@@ -11,13 +11,13 @@ Rails.application.configure do
   config.fino.instrument = true
 end
 
-$redis = Redis.new(host: ENV.fetch("FINO_DUMMY_REDIS_HOST", "redis.fino.orb.local"))
+$redis = Redis.new(host: ENV.fetch("FINO_DUMMY_REDIS_HOST", "redis.fino.orb.local")) # rubocop:disable Style/GlobalVars
 
 Fino.configure do
-  case ENV["FINO_DUMMY_ADAPTER"]
+  case ENV.fetch("FINO_DUMMY_ADAPTER", nil)
   when "redis"
     adapter do
-      Fino::Redis::Adapter.new($redis, namespace: "fino_dummy")
+      Fino::Redis::Adapter.new($redis, namespace: "fino_dummy") # rubocop:disable Style/GlobalVars
     end
   else
     adapter do

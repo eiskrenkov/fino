@@ -37,7 +37,7 @@ class Fino::Registry
       )
     end
 
-    def section(section_name, options = {}, &block)
+    def section(section_name, options = {}, &)
       section_definition = Fino::Definition::Section.new(
         name: section_name,
         **options
@@ -45,7 +45,7 @@ class Fino::Registry
 
       @registry.register_section(section_definition)
 
-      SectionDSL.new(section_definition, @registry).instance_eval(&block)
+      SectionDSL.new(section_definition, @registry).instance_eval(&)
     end
   end
 

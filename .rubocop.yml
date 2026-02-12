@@ -1,9 +1,12 @@
 AllCops:
   NewCops: enable
-  TargetRubyVersion: 3.0
+  TargetRubyVersion: 3.2
 
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact
+  Exclude:
+    - "lib/fino/rails/generators/*"
+    - "lib/fino/solid/*"
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes
@@ -18,3 +21,16 @@ Layout/LineLength:
   Max: 120
   AllowedPatterns:
     - \A#
+
+Metrics/BlockLength:
+  Exclude:
+    - "spec/dummy/config/initializers/fino.rb"
+
+Naming/FileName:
+  Exclude:
+    - "lib/fino-rails.rb"
+    - "lib/fino-redis.rb"
+    - "lib/fino-solid.rb"
+
+Gemspec/RequireMFA:
+  Enabled: false
