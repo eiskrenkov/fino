@@ -124,7 +124,7 @@ class Fino::Library
   end
 
   def storage
-    Fino::Pipe::Storage.new(adapter)
+    Fino::Pipe::Storage.new(adapter, configuration)
   end
 
   def adapter

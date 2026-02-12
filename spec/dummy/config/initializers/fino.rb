@@ -27,6 +27,17 @@ Fino.configure do
 
   cache { Fino::Cache::Memory.new(expires_in: 3.seconds) }
 
+  after_write do |setting_definition, value, overrides, variants|
+    next unless setting_definition.tags.include?(:log_write)
+
+    Fino.logger.info do
+      "Setting #{setting_definition.key} was written with value #{value}".tap do |log|
+        log << ", overrides #{overrides}" if overrides.any?
+        log << ", variants #{variants}" if variants.any?
+      end
+    end
+  end
+
   settings do
     setting :maintenance_mode,
             :boolean,
@@ -61,10 +72,11 @@ Fino.configure do
       setting :integration_enabled,
               :boolean,
               default: false,
-              description: "Acts as a circuit breaker for the integration"
+              description: "Acts as a circuit breaker for the integration",
+              tags: [:log_write]
 
-      setting :http_read_timeout, :integer, default: 200, unit: :ms
-      setting :http_open_timeout, :integer, default: 100, unit: :ms
+      setting :http_read_timeout, :integer, default: 200, unit: :ms, tags: [:log_write]
+      setting :http_open_timeout, :integer, default: 100, unit: :ms, tags: [:log_write]
 
       setting :max_retries, :integer, default: 3, description: "Maximum number of retries for failed requests"
     end

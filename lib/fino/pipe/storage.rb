@@ -3,8 +3,9 @@
 class Fino::Pipe::Storage
   include Fino::Pipe
 
-  def initialize(adapter)
+  def initialize(adapter, configuration)
     @adapter = adapter
+    @configuration = configuration
   end
 
   def read(setting_definition)
@@ -18,12 +19,14 @@ class Fino::Pipe::Storage
   end
 
   def write(setting_definition, value, overrides, variants)
-    adapter.write(setting_definition, value, overrides, variants)
+    adapter.write(setting_definition, value, overrides, variants).tap do
+      configuration.after_write_block&.call(setting_definition, value, overrides, variants)
+    end
   end
 
   private
 
-  attr_reader :adapter
+  attr_reader :adapter, :configuration
 
   def to_setting(setting_definition, raw_adapter_data)
     raw_value = adapter.fetch_value_from(raw_adapter_data)
