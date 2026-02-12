@@ -35,6 +35,10 @@ class Fino::Definition::Setting
     defined?(@description) ? @description : @description = options[:description]
   end
 
+  def tags
+    defined?(@tags) ? @tags : @tags = options[:tags] || []
+  end
+
   def path
     @path ||= [setting_name, section_definition&.name].compact
   end
