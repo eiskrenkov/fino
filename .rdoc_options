@@ -1,0 +1,7 @@
+---
+encoding: UTF-8
+main_page: README.md
+title: "Fino - Dynamic Settings Engine for Ruby and Rails"
+markup: rdoc
+line_numbers: false
+tab_width: 2

@@ -2,8 +2,29 @@
 # frozen_string_literal: true
 
 require "fino/version"
+require "rdoc/task"
 
 ARTIFACTS_FOLDER = "artifacts"
+
+RDoc::Task.new(:rdoc) do |rdoc|
+  rdoc.rdoc_dir = "doc"
+  rdoc.title = "Fino #{Fino::VERSION}"
+  rdoc.main = "README.md"
+  rdoc.rdoc_files.include("README.md", "lib/**/*.rb")
+  rdoc.rdoc_files.exclude(
+    "lib/fino-rails.rb",
+    "lib/fino-redis.rb",
+    "lib/fino-solid.rb",
+    "lib/fino/rails.rb",
+    "lib/fino/rails/**/*",
+    "lib/fino/redis.rb",
+    "lib/fino/redis/**/*",
+    "lib/fino/solid.rb",
+    "lib/fino/solid/**/*",
+    "lib/fino/metadata.rb",
+    "lib/fino/railtie.rb"
+  )
+end
 
 desc "Build all gems into the artifacts directory"
 task :build do
