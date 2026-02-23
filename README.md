@@ -1,8 +1,10 @@
 # Fino
 
-⚠️ Fino in active development phase at wasn't properly battle tested in production just yet. Give us a star and stay tuned for Production test results and new features
+Fino is plug & play distributed settings engine for Ruby and Rails
 
-Fino is a dynamic settings engine for Ruby and Rails
+- Blazing fast reads with multiple adapers (Redis, Active Record)
+- Out of the box UI
+- A/B test and override settings on the go
 
 ## Usage
 
