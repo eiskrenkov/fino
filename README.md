@@ -139,6 +139,31 @@ Fino.value(:http_read_timeout, at: :my_micro_service, unit: :sec) #=> 0.2
 Fino.setting(:http_read_timeout, at: :my_micro_service).value(unit: :sec) #=> 0.2
 ```
 
+### Callbacks
+
+Fino provides callbacks configuration that will be called once some particular action is triggered:
+
+- `after_write` - yields `setting_definition`, `value`, `overrides` and `variants`, is triggered when setting is updated
+
+```ruby
+Fino.configure do
+  # ...
+
+  after_write do |setting_definition, value, overrides, variants|
+    next unless setting_definition.tags.include?(:monitor)
+
+    Monitor.track_changes("Set #{setting_definition.key} to #{value}")
+  end
+
+  settings do
+    setting :maintenance_mode, :boolean, default: false
+
+    setting :http_read_timeout, :integer, unit: :ms, default: 200, tags: %i[monitor]
+    setting :http_open_timeout, :integer, unit: :ms, default: 500, tags: %i[monitor]
+  end
+end
+```
+
 ## Rails integration
 
 Fino easily integrates with Rails. Just add the gem to your Gemfile:
