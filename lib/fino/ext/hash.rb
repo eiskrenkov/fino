@@ -3,7 +3,7 @@
 module Fino::Ext::Hash
   refine Hash do
     def deep_set(value, *path)
-      item = path.pop
+      item = path.shift
 
       if path.empty?
         self[item] = value

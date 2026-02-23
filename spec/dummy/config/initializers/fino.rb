@@ -40,9 +40,22 @@ Fino.configure do
             default: 1000,
             description: "Maximum API requests per minute per user to prevent abuse"
 
-    section :openai, label: "OpenAI" do
+    section :llm, label: "LLM" do
       setting :model,
-              :string,
+              :select,
+              values: lambda {
+                models = RubyLLM.models.refresh!.chat_models
+
+                openai_models = models.by_provider(:openai)
+                anthropic_models = models.by_provider(:anthropic)
+
+                [*openai_models, *anthropic_models].map do |model|
+                  Fino::Settings::Select::Option.new(
+                    label: model.name,
+                    value: model.id
+                  )
+                end
+              },
               default: "gpt-5",
               description: "OpenAI model"
 

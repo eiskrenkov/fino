@@ -5,7 +5,8 @@ class Fino::Definition::Setting
     Fino::Settings::String,
     Fino::Settings::Integer,
     Fino::Settings::Float,
-    Fino::Settings::Boolean
+    Fino::Settings::Boolean,
+    Fino::Settings::Select
   ].freeze
 
   SETTING_TYPE_TO_TYPE_CLASS_MAPPING = TYPE_CLASSES.each_with_object({}) do |klass, hash|
@@ -27,8 +28,16 @@ class Fino::Definition::Setting
     end
   end
 
+  def serialize(value)
+    type_class.serialize(self, value)
+  end
+
+  def deserialize(raw_value)
+    type_class.deserialize(self, raw_value)
+  end
+
   def default
-    defined?(@default) ? @default : @default = type_class.deserialize(options[:default])
+    defined?(@default) ? @default : @default = deserialize(options[:default])
   end
 
   def description
@@ -36,11 +45,11 @@ class Fino::Definition::Setting
   end
 
   def path
-    @path ||= [setting_name, section_definition&.name].compact
+    @path ||= [section_definition&.name, setting_name].compact
   end
 
   def key
-    @key ||= path.reverse.join("/")
+    @key ||= path.join("/")
   end
 
   def eql?(other)

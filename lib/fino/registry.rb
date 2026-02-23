@@ -3,6 +3,7 @@
 class Fino::Registry
   DuplicateSetting = Class.new(Fino::Error)
   UnknownSetting = Class.new(Fino::Error)
+  UnknownOption = Class.new(Fino::Error)
 
   class DSL
     class SectionDSL
@@ -59,14 +60,17 @@ class Fino::Registry
 
     @section_definitions = Set.new
     @section_definitions_by_name = {}
+
+    @options_by_select_setting_path = {}
+    @indexed_options_by_select_setting_path = {}
   end
 
-  def setting_definition(*path)
-    @setting_definitions_by_path.dig(*path.compact.reverse.map(&:to_s))
+  def setting_definition(setting_name, at: nil)
+    @setting_definitions_by_path.dig(*[at, setting_name].compact.map(&:to_s))
   end
 
-  def setting_definition!(*path)
-    setting_definition(*path).tap do |definition|
+  def setting_definition!(setting_name, at: nil)
+    setting_definition(setting_name, at: at).tap do |definition|
       raise UnknownSetting, "Unknown setting: #{path.compact.join('.')}" unless definition
     end
   end
@@ -86,12 +90,30 @@ class Fino::Registry
     @section_definitions_by_name[section_name.to_s]
   end
 
+  def option(value, *path)
+    @indexed_options_by_select_setting_path.dig(*path.compact.map(&:to_s)).fetch(value) do
+      raise UnknownOption, "Unknown option: #{value} for setting: #{path.compact.join('.')}"
+    end
+  end
+
+  def options(*path)
+    @options_by_select_setting_path.dig(*path.compact.map(&:to_s))
+  end
+
   def register(setting_definition)
     unless @setting_definitions.add?(setting_definition)
       raise DuplicateSetting, "#{setting_definition.setting_name} is already registered at #{setting_definition.key}"
     end
 
-    @setting_definitions_by_path.deep_set(setting_definition, *setting_definition.path.map(&:to_s))
+    path = setting_definition.path.map(&:to_s)
+
+    @setting_definitions_by_path.deep_set(setting_definition, *path)
+    return unless setting_definition.type == :select
+
+    options = setting_definition.options.fetch(:values, -> { [] }).call
+
+    @options_by_select_setting_path.deep_set(options, *path)
+    @indexed_options_by_select_setting_path.deep_set(options.index_by(&:value), *path)
   end
 
   def register_section(section_definition)
