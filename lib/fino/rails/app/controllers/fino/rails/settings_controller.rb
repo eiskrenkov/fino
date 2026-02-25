@@ -48,8 +48,10 @@ class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
   end
 
   def variants
-    params[:variants].values.each_with_object({}).with_index do |(raw_variant, memo), index|
-      next if index.zero?
+    return {} unless params[:variants]
+
+    params[:variants].to_unsafe_h.each_with_object({}) do |(key, raw_variant), memo|
+      next if key.to_s == "0"
       next unless raw_variant[:percentage].to_f > 0.0
 
       memo[raw_variant[:percentage].to_f] = raw_variant[:value]
