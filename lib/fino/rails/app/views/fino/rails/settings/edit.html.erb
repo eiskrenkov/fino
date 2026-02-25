@@ -56,7 +56,12 @@
 
           <%= render "fino/rails/settings/overrides", setting: @setting, form: f %>
 
-          <%= render "fino/rails/settings/ab_testing", setting: @setting, form: f %>
+          <% case @setting %>
+          <% when Fino::Settings::Boolean %>
+            <%= render "fino/rails/settings/rollout", setting: @setting, form: f %>
+          <% else %>
+            <%= render "fino/rails/settings/ab_testing", setting: @setting, form: f %>
+          <% end %>
         </div>
       </div>
     <% end %>
