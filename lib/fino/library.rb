@@ -40,7 +40,7 @@ class Fino::Library
     setting_definition = build_setting_definition(setting_name, at: at)
     current_setting = pipeline.read(setting_definition)
 
-    deserialized_overrides = overrides.transform_values { |v| setting_definition.type_class.deserialize(v) }
+    deserialized_overrides = overrides.transform_values { |v| setting_definition.deserialize(v) }
     merged_overrides = current_setting.overrides.merge(deserialized_overrides)
 
     variants = current_setting.experiment&.variants || []
@@ -62,16 +62,16 @@ class Fino::Library
 
     setting_name, raw_value = data.first
     setting_definition = build_setting_definition(setting_name, at: at)
-    value = setting_definition.type_class.deserialize(raw_value)
+    value = setting_definition.deserialize(raw_value)
 
-    overrides = raw_overrides.transform_values { |v| setting_definition.type_class.deserialize(v) }
+    overrides = raw_overrides.transform_values { |v| setting_definition.deserialize(v) }
 
     experiment = Fino::AbTesting::Experiment.new(setting_definition)
 
     raw_variants.map do |percentage, value|
       experiment << Fino::AbTesting::Variant.new(
         percentage: percentage,
-        value: setting_definition.type_class.deserialize(value)
+        value: setting_definition.deserialize(value)
       )
     end
 
@@ -113,7 +113,7 @@ class Fino::Library
   attr_reader :configuration
 
   def build_setting_definition(setting_name, at: nil)
-    configuration.registry.setting_definition!(setting_name.to_s, at&.to_s)
+    configuration.registry.setting_definition!(setting_name.to_s, at: at&.to_s)
   end
 
   def pipeline

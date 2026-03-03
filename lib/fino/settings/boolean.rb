@@ -6,11 +6,11 @@ class Fino::Settings::Boolean
   self.type_identifier = :boolean
 
   class << self
-    def serialize(value)
+    def serialize(_setting_definition, value)
       value ? "1" : "0"
     end
 
-    def deserialize(raw_value)
+    def deserialize(_setting_definition, raw_value)
       case raw_value
       when "1", 1, true, "true", "t", "yes", "y" then true
       else false

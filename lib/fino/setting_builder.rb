@@ -23,7 +23,7 @@ class Fino::SettingBuilder
   private
 
   def deserialize_global_value(raw_value)
-    return setting_definition.options[:default] if raw_value.equal?(Fino::EMPTINESS)
+    return setting_definition.default if raw_value.equal?(Fino::EMPTINESS)
 
     deserialize(raw_value)
   end
@@ -46,6 +46,6 @@ class Fino::SettingBuilder
   end
 
   def deserialize(value)
-    setting_definition.type_class.deserialize(value)
+    setting_definition.deserialize(value)
   end
 end
