@@ -72,6 +72,69 @@ RSpec.describe "Configuration", type: :integration do
       expect(setting.section_definition.label).to eq("OpenAI")
     end
 
+    describe "after_write callback" do
+      it "is called with correct arguments after writing a setting" do
+        callback_args = nil
+
+        Fino.reconfigure do
+          adapter { TestHelpers.adapter }
+          cache { TestHelpers.cache }
+
+          after_write do |setting_definition, value, overrides, variants|
+            callback_args = [setting_definition, value, overrides, variants]
+          end
+
+          settings do
+            setting :maintenance_mode, :boolean, default: false
+          end
+        end
+
+        Fino.set(maintenance_mode: true, overrides: { admin: true })
+
+        expect(callback_args).not_to be_nil
+        expect(callback_args[0].key).to eq("maintenance_mode")
+        expect(callback_args[1]).to eq(true)
+        expect(callback_args[2]).to eq(admin: true)
+        expect(callback_args[3]).to eq([])
+      end
+
+      context "when callback filters by tags" do
+        let(:callback_log) { [] }
+
+        before do
+          log = callback_log
+
+          Fino.reconfigure do
+            adapter { TestHelpers.adapter }
+            cache { TestHelpers.cache }
+
+            after_write do |setting_definition, value, _overrides, _variants|
+              next unless setting_definition.tags.include?(:audited)
+
+              log << { key: setting_definition.key, value: value }
+            end
+
+            settings do
+              setting :tracked_flag, :boolean, default: false, tags: [:audited]
+              setting :untracked_flag, :boolean, default: false
+            end
+          end
+        end
+
+        it "runs callback for settings with matching tag" do
+          Fino.set(tracked_flag: true)
+
+          expect(callback_log).to eq([{ key: "tracked_flag", value: true }])
+        end
+
+        it "skips callback for settings without matching tag" do
+          Fino.set(untracked_flag: true)
+
+          expect(callback_log).to be_empty
+        end
+      end
+    end
+
     context "when trying to register duplicate setting" do
       context "when on top level" do
         it "raises an error" do

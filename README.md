@@ -1,8 +1,10 @@
 # Fino
 
-⚠️ Fino in active development phase at wasn't properly battle tested in production just yet. Give us a star and stay tuned for Production test results and new features
+Fino is plug & play distributed settings engine for Ruby and Rails
 
-Fino is a dynamic settings engine for Ruby and Rails
+- Blazing fast reads with multiple adapers (Redis, Active Record)
+- Out of the box UI
+- A/B test and override settings on the go
 
 ## Usage
 
@@ -137,6 +139,31 @@ Fino.value(:http_read_timeout, at: :my_micro_service) #=> 200
 # Convert from ms to sec on the fly
 Fino.value(:http_read_timeout, at: :my_micro_service, unit: :sec) #=> 0.2
 Fino.setting(:http_read_timeout, at: :my_micro_service).value(unit: :sec) #=> 0.2
+```
+
+### Callbacks
+
+Fino provides callbacks configuration that will be called once some particular action is triggered:
+
+- `after_write` - yields `setting_definition`, `value`, `overrides` and `variants`, is triggered when setting is updated
+
+```ruby
+Fino.configure do
+  # ...
+
+  after_write do |setting_definition, value, overrides, variants|
+    next unless setting_definition.tags.include?(:monitor)
+
+    Monitor.track_changes("Set #{setting_definition.key} to #{value}")
+  end
+
+  settings do
+    setting :maintenance_mode, :boolean, default: false
+
+    setting :http_read_timeout, :integer, unit: :ms, default: 200, tags: %i[monitor]
+    setting :http_open_timeout, :integer, unit: :ms, default: 500, tags: %i[monitor]
+  end
+end
 ```
 
 ## Rails integration

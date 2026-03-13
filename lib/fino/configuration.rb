@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Fino::Configuration
-  attr_reader :registry, :pipeline_builder_block
+  attr_reader :registry, :pipeline_builder_block, :after_write_block
 
   def initialize(registry)
     @registry = registry
@@ -35,6 +35,10 @@ class Fino::Configuration
 
   def pipeline(&block)
     @pipeline_builder_block = block
+  end
+
+  def after_write(&block)
+    @after_write_block = block
   end
 
   def settings(&)

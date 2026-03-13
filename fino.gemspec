@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
   spec.authors  = ["Egor Iskrenkov"]
   spec.email    = ["egor@iskrenkov.me"]
 
-  spec.summary  = "Elegant & performant settings engine for Ruby and Rails"
+  spec.summary  = "Plug & play distributed settings engine for Ruby and Rails"
   spec.homepage = "https://github.com/eiskrenkov/fino"
   spec.license  = "MIT"
 

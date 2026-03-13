@@ -1,0 +1,130 @@
+<div class="px-4 sm:px-0">
+  <h3 class="text-base/7 font-semibold text-gray-900">Overrides</h3>
+  <p class="mt-1 text-sm/6 text-gray-600">Override the setting value for specific scopes</p>
+</div>
+
+<div class="bg-white shadow-xs outline outline-gray-900/5 sm:rounded-xl md:col-span-2">
+  <div class="px-4 py-6 sm:p-6">
+    <div id="scope-overrides">
+      <%= form.fields_for :overrides do |override_form| %>
+        <% setting.overrides.each_with_index do |(scope, value), index| %>
+          <div class="scope-override-item mb-6 last:mb-0" data-index="<%= index %>">
+            <div class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6">
+              <div class="sm:col-span-2">
+                <%= override_form.label "scope_#{index}", "Scope", class: "block text-sm/6 font-medium text-gray-900" %>
+                <div class="mt-2">
+                  <%= override_form.text_field "scope_#{index}",
+                                            value: scope,
+                                            name: "overrides[#{index}][scope]",
+                                            class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6",
+                                            placeholder: "e.g., qa, admin" %>
+                </div>
+              </div>
+
+              <div class="sm:col-span-3">
+                <%= override_form.label "value_#{index}", "Value", class: "block text-sm/6 font-medium text-gray-900" %>
+                <div class="mt-2">
+                  <%= render "fino/rails/settings/types/#{setting.type}",
+                            form: override_form,
+                            setting: setting,
+                            field_name: "value_#{index}",
+                            field_id: "overrides_#{index}_value",
+                            field_name_attr: "overrides[#{index}][value]",
+                            field_value: value,
+                            wrapper_class: "",
+                            input_class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" %>
+                </div>
+              </div>
+
+              <div class="sm:col-span-1 flex items-end">
+                <%= button_tag "Remove", type: "button", class: "remove-override rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600" %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+
+      <% if setting.overrides.empty? %>
+        <div class="text-center py-6">
+          <p class="text-sm text-gray-500">No scope overrides configured</p>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="mt-6">
+      <%= button_tag "Add Override", type: "button", id: "add-override", class: "rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" %>
+    </div>
+  </div>
+</div>
+
+<div id="override-templates" style="display: none;">
+  <%= form.fields_for :template do |template_form| %>
+    <%= render "fino/rails/settings/types/#{setting.type}",
+              form: template_form,
+              setting: setting,
+              field_name: "value_TEMPLATE_INDEX",
+              field_id: "overrides_TEMPLATE_INDEX_value",
+              field_name_attr: "overrides[TEMPLATE_INDEX][value]",
+              field_value: nil,
+              wrapper_class: "",
+              input_class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" %>
+  <% end %>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const addButton = document.getElementById('add-override');
+  const overridesContainer = document.getElementById('scope-overrides');
+  const templateContainer = document.getElementById('override-templates');
+  let overrideIndex = <%= setting.overrides.length %>;
+
+  addButton.addEventListener('click', function() {
+    let valueInputTemplate = templateContainer.innerHTML
+      .replace(/TEMPLATE_INDEX/g, overrideIndex)
+      .replace(/value_\d+/g, `value_${overrideIndex}`)
+      .trim();
+
+    const template = `
+      <div class="scope-override-item mb-6" data-index="${overrideIndex}">
+        <div class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6">
+          <div class="sm:col-span-2">
+            <label for="overrides_${overrideIndex}_scope" class="block text-sm/6 font-medium text-gray-900">Scope</label>
+            <div class="mt-2">
+              <input type="text" name="overrides[${overrideIndex}][scope]" id="overrides_${overrideIndex}_scope" class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" placeholder="e.g., qa, admin" />
+            </div>
+          </div>
+
+          <div class="sm:col-span-3">
+            <label for="overrides_${overrideIndex}_value" class="block text-sm/6 font-medium text-gray-900">Value</label>
+            <div class="mt-2">
+              ${valueInputTemplate}
+            </div>
+          </div>
+
+          <div class="sm:col-span-1 flex items-end">
+            <button type="button" class="remove-override rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Remove</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const noOverridesMsg = overridesContainer.querySelector('.text-center');
+    if (noOverridesMsg) {
+      noOverridesMsg.remove();
+    }
+
+    overridesContainer.insertAdjacentHTML('beforeend', template);
+    overrideIndex++;
+  });
+
+  overridesContainer.addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-override')) {
+      e.target.closest('.scope-override-item').remove();
+
+      if (!overridesContainer.querySelector('.scope-override-item')) {
+        overridesContainer.innerHTML = '<div class="text-center py-6"><p class="text-sm text-gray-500">No scope overrides configured.</p></div>';
+      }
+    }
+  });
+});
+</script>
