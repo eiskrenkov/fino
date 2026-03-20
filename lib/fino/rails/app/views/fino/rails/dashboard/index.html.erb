@@ -52,6 +52,10 @@
                               <span class="text-base font-medium text-gray-600"><%= setting.unit.short_name %></span>
                             <% end %>
                           </div>
+                        <% when Fino::Settings::Select %>
+                          <div class="truncate text-xl font-semibold text-gray-800">
+                            <%= setting.value&.label %>
+                          </div>
                         <% else %>
                           <div class="truncate text-xl font-semibold text-gray-800">
                             <%= setting.value %>

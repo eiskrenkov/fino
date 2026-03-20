@@ -61,14 +61,22 @@ Fino.configure do
                 anthropic_models = models.by_provider(:anthropic)
 
                 [*openai_models, *anthropic_models].map do |model|
+                  text_pricing = model.pricing&.text_tokens
+
                   Fino::Settings::Select::Option.new(
                     label: model.name,
-                    value: model.id
+                    value: model.id,
+                    metadata: {
+                      provider: model.provider.to_s.capitalize,
+                      pricing: if text_pricing&.input && text_pricing&.output
+                                 "$#{text_pricing.input} / $#{text_pricing.output} per 1M tokens"
+                               end
+                    }.compact
                   )
                 end
               },
               default: "gpt-5",
-              description: "OpenAI model"
+              description: "Chat model for AI-powered features"
 
       setting :temperature,
               :float,

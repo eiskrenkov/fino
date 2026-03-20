@@ -24,4 +24,8 @@ class Fino::Settings::Select
       Fino.registry.option(raw_value, *setting_definition.path)
     end
   end
+
+  def options
+    Fino.registry.options(*definition.path)
+  end
 end

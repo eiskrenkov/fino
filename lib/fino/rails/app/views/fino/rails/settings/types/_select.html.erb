@@ -1,0 +1,83 @@
+<% setting = local_assigns[:setting] %>
+<% options = setting.options %>
+<% selected = field_value.is_a?(Fino::Settings::Select::Option) ? field_value : options.find { |o| o.value.to_s == field_value.to_s } %>
+
+<div class="relative fino-select">
+  <%= form.hidden_field field_name,
+                        { value: selected&.value, id: field_id, class: "fino-select-value" }
+                        .merge(field_name_attr ? { name: field_name_attr } : {}) %>
+
+  <button type="button"
+          class="fino-select-trigger relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6">
+    <span class="fino-select-label block truncate"><%= selected&.label || "Select an option" %></span>
+    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+      <svg class="size-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0l-4.25-4.25a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+      </svg>
+    </span>
+  </button>
+
+  <ul class="fino-select-options hidden absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+    <% options.each do |option| %>
+      <li class="fino-select-option group relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-indigo-600"
+          data-value="<%= option.value %>"
+          data-label="<%= option.label %>">
+        <div class="flex flex-col">
+          <span class="font-medium truncate text-gray-900 group-hover:text-white"><%= option.label %></span>
+          <% if option.metadata.present? %>
+            <span class="text-xs text-gray-500 group-hover:text-indigo-200 mt-0.5">
+              <%= option.metadata.values.compact.join(" \u00B7 ") %>
+            </span>
+          <% end %>
+        </div>
+        <span class="fino-select-check absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600 group-hover:text-white <%= 'hidden' unless selected&.value == option.value %>">
+          <svg class="size-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" />
+          </svg>
+        </span>
+      </li>
+    <% end %>
+  </ul>
+</div>
+
+<script>
+if (!window._finoSelectInitialized) {
+  window._finoSelectInitialized = true;
+
+  document.addEventListener('click', function(e) {
+    const trigger = e.target.closest('.fino-select-trigger');
+    if (trigger) {
+      const container = trigger.closest('.fino-select');
+      const optionsList = container.querySelector('.fino-select-options');
+
+      document.querySelectorAll('.fino-select-options').forEach(function(el) {
+        if (el !== optionsList) el.classList.add('hidden');
+      });
+
+      optionsList.classList.toggle('hidden');
+      return;
+    }
+
+    const option = e.target.closest('.fino-select-option');
+    if (option) {
+      const container = option.closest('.fino-select');
+      const value = option.getAttribute('data-value');
+      const label = option.getAttribute('data-label');
+
+      container.querySelector('.fino-select-value').value = value;
+      container.querySelector('.fino-select-label').textContent = label;
+      container.querySelector('.fino-select-options').classList.add('hidden');
+
+      container.querySelectorAll('.fino-select-check').forEach(function(el) {
+        el.classList.add('hidden');
+      });
+      option.querySelector('.fino-select-check').classList.remove('hidden');
+      return;
+    }
+
+    document.querySelectorAll('.fino-select-options').forEach(function(el) {
+      el.classList.add('hidden');
+    });
+  });
+}
+</script>

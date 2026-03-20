@@ -5,7 +5,8 @@ module Fino::Rails::SettingsHelper
     string: "pink",
     boolean: "blue",
     integer: "yellow",
-    float: "purple"
+    float: "purple",
+    select: "green"
   }.freeze
 
   def setting_type_label(setting)
