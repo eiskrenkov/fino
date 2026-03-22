@@ -51,11 +51,47 @@ Fino.configure do
             default: 1000,
             description: "Maximum API requests per minute per user to prevent abuse"
 
-    section :openai, label: "OpenAI" do
+    section :storefront, label: "Storefront" do
+      setting :purchase_button_color,
+              :select,
+              options: [
+                Fino::Settings::Select::Option.new(label: "Red", value: "red"),
+                Fino::Settings::Select::Option.new(label: "Blue", value: "blue")
+              ],
+              default: "red",
+              description: "Color of the purchase button"
+    end
+
+    section :llm, label: "LLM" do
       setting :model,
-              :string,
+              :select,
+              options: proc { |refresh:|
+                RubyLLM.models.refresh! if refresh
+                models = RubyLLM.models.chat_models
+
+                openai_models = models.by_provider(:openai)
+                anthropic_models = models.by_provider(:anthropic)
+
+                build_pricing_label = proc do |model|
+                  text_pricing = model.pricing&.text_tokens
+                  next unless text_pricing && text_pricing.input && text_pricing.output
+
+                  "$#{text_pricing.input} / $#{text_pricing.output} per 1M tokens"
+                end
+
+                [*openai_models, *anthropic_models].map do |model|
+                  Fino::Settings::Select::Option.new(
+                    label: model.name,
+                    value: model.id,
+                    metadata: {
+                      provider: model.provider_class.name,
+                      pricing: build_pricing_label.call(model)
+                    }.compact
+                  )
+                end
+              },
               default: "gpt-5",
-              description: "OpenAI model"
+              description: "Chat model for AI-powered features"
 
       setting :temperature,
               :float,

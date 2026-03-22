@@ -21,7 +21,7 @@ module Fino
       end
 
       def write(setting_definition, value, overrides, variants)
-        serialize_value = ->(raw_value) { setting_definition.type_class.serialize(raw_value) }
+        serialize_value = ->(raw_value) { setting_definition.serialize(raw_value) }
 
         data = { VALUE_KEY => serialize_value.call(value) }
 

@@ -11,6 +11,13 @@ class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
     @setting = Fino.setting(setting_name, at: section_name)
   end
 
+  def refresh
+    setting = Fino.setting(setting_name, at: section_name)
+    setting.refresh!
+
+    head :ok
+  end
+
   def update
     Fino.set(
       setting_name => params[:value],

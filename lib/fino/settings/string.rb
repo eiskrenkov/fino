@@ -6,11 +6,11 @@ class Fino::Settings::String
   self.type_identifier = :string
 
   class << self
-    def serialize(value)
+    def serialize(_setting_definition, value)
       value
     end
 
-    def deserialize(raw_value)
+    def deserialize(_setting_definition, raw_value)
       raw_value
     end
   end

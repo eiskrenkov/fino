@@ -7,6 +7,7 @@
 
     <title><%= yield(:title) || 'Settings' %> | Fino</title>
 
+    <%= csrf_meta_tags %>
     <link href="<%= fino_asset_path("/fino.css") %>" rel="stylesheet">
 
     <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script>

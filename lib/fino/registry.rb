@@ -51,7 +51,7 @@ class Fino::Registry
 
   using Fino::Ext::Hash
 
-  attr_reader :setting_definitions, :section_definitions
+  attr_reader :setting_definitions, :section_definitions, :option_registry
 
   def initialize
     @setting_definitions = Set.new
@@ -59,14 +59,16 @@ class Fino::Registry
 
     @section_definitions = Set.new
     @section_definitions_by_name = {}
+
+    @option_registry = Fino::Settings::Select::OptionRegistry.new
   end
 
-  def setting_definition(*path)
-    @setting_definitions_by_path.dig(*path.compact.reverse.map(&:to_s))
+  def setting_definition(setting_name, at: nil)
+    @setting_definitions_by_path.dig(*[at, setting_name].compact.map(&:to_s))
   end
 
-  def setting_definition!(*path)
-    setting_definition(*path).tap do |definition|
+  def setting_definition!(setting_name, at: nil)
+    setting_definition(setting_name, at: at).tap do |definition|
       raise UnknownSetting, "Unknown setting: #{path.compact.join('.')}" unless definition
     end
   end
@@ -91,7 +93,18 @@ class Fino::Registry
       raise DuplicateSetting, "#{setting_definition.setting_name} is already registered at #{setting_definition.key}"
     end
 
-    @setting_definitions_by_path.deep_set(setting_definition, *setting_definition.path.map(&:to_s))
+    path = setting_definition.path.map(&:to_s)
+
+    @setting_definitions_by_path.deep_set(setting_definition, *path)
+
+    register_type_specific_data(setting_definition, path)
+  end
+
+  def register_type_specific_data(setting_definition, path)
+    case setting_definition.type
+    when Fino::Settings::Select.type_identifier
+      @option_registry.register(setting_definition.options.fetch(:options, []), path)
+    end
   end
 
   def register_section(section_definition)

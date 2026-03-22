@@ -62,7 +62,7 @@
                     <div class="mt-2">
                       <% if index == 0 %>
                         <div class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-base text-gray-500 outline-1 -outline-offset-1 outline-gray-300 sm:text-sm/6">
-                          <%= setting.value.inspect %>
+                          <%= setting.value.is_a?(Fino::Settings::Select::Option) ? setting.value.label : setting.value.inspect %>
                         </div>
                         <input type="hidden" name="variants[<%= index %>][value]" value="<%= variant.value %>" />
                       <% else %>
@@ -124,7 +124,7 @@
               <label class="block text-sm/6 font-medium text-gray-900">Value</label>
               <div class="mt-2">
                 <div class="block w-full rounded-md bg-gray-100 px-3 py-1.5 text-base text-gray-500 outline-1 -outline-offset-1 outline-gray-300 sm:text-sm/6">
-                  <%= setting.value.inspect %>
+                  <%= setting.value.is_a?(Fino::Settings::Select::Option) ? setting.value.label : setting.value.inspect %>
                 </div>
               </div>
             </div>

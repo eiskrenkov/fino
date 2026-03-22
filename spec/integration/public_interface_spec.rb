@@ -37,6 +37,34 @@ RSpec.describe "Public interface", type: :integration do
           setting :http_read_timeout, :integer, default: 200, unit: :ms
           setting :http_open_timeout, :integer, default: 1, unit: :sec
         end
+
+        section :storefront, label: "Storefront" do
+          setting :purchase_button_color,
+                  :select,
+                  options: [
+                    Fino::Settings::Select::Option.new(label: "Red", value: "red"),
+                    Fino::Settings::Select::Option.new(label: "Blue", value: "blue")
+                  ],
+                  default: "red"
+        end
+
+        section :dynamic, label: "Dynamic" do
+          setting :provider,
+                  :select,
+                  options: proc { |refresh:|
+                    base = [
+                      Fino::Settings::Select::Option.new(label: "Provider A", value: "a"),
+                      Fino::Settings::Select::Option.new(label: "Provider B", value: "b")
+                    ]
+
+                    if refresh
+                      base << Fino::Settings::Select::Option.new(label: "Provider C", value: "c")
+                    end
+
+                    base
+                  },
+                  default: "a"
+        end
       end
     end
   end
@@ -519,7 +547,9 @@ RSpec.describe "Public interface", type: :integration do
             "openai/model",
             "openai/temperature",
             "external_api/http_read_timeout",
-            "external_api/http_open_timeout"
+            "external_api/http_open_timeout",
+            "storefront/purchase_button_color",
+            "dynamic/provider"
           ]
         )
       end
@@ -535,6 +565,66 @@ RSpec.describe "Public interface", type: :integration do
 
       expect(openai_model.key).to eq("openai/model")
       expect(openai_model.value).to eq("gpt-5")
+    end
+  end
+
+  describe "select setting" do
+    describe "static options" do
+      it "returns options" do
+        setting = Fino.setting(:purchase_button_color, at: :storefront)
+        options = setting.options
+
+        expect(options.size).to eq(2)
+        expect(options.map(&:value)).to eq(%w[red blue])
+        expect(options.map(&:label)).to eq(%w[Red Blue])
+      end
+
+      it "returns default value as Option" do
+        setting = Fino.setting(:purchase_button_color, at: :storefront)
+
+        expect(setting.value).to be_a(Fino::Settings::Select::Option)
+        expect(setting.value.value).to eq("red")
+        expect(setting.value.label).to eq("Red")
+      end
+
+      it "persists and reads selected option" do
+        Fino.set(purchase_button_color: "blue", at: :storefront)
+        setting = Fino.setting(:purchase_button_color, at: :storefront)
+
+        expect(setting.value.value).to eq("blue")
+        expect(setting.value.label).to eq("Blue")
+      end
+
+      it "is not refreshable" do
+        setting = Fino.setting(:purchase_button_color, at: :storefront)
+
+        expect(setting.refreshable?).to eq(false)
+      end
+    end
+
+    describe "dynamic options" do
+      it "returns options built by the callable" do
+        setting = Fino.setting(:provider, at: :dynamic)
+        options = setting.options
+
+        expect(options.map(&:value)).to include("a", "b")
+      end
+
+      it "is refreshable" do
+        setting = Fino.setting(:provider, at: :dynamic)
+
+        expect(setting.refreshable?).to eq(true)
+      end
+
+      it "calls builder with refresh: true on refresh! and updates options" do
+        setting = Fino.setting(:provider, at: :dynamic)
+        options_before = setting.options
+
+        setting.refresh!
+
+        expect(setting.options.size).to eq(options_before.size + 1)
+        expect(setting.options.last.value).to eq("c")
+      end
     end
   end
 end
