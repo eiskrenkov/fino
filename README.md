@@ -123,7 +123,7 @@ Fino.setting(:purchase_button_color, at: :storefront).options
       #<Fino::Settings::Select::Option:0x0000000124fecca0 @label="Blue", @metadata={}, @value="blue">]
 ```
 
-## Dynamic option
+#### Dynamic option
 
 Options can also be defined dynamically using any callable object. Let's take a look at dynamic options in an example
 of LLM model setting using [RubyLLM](https://github.com/crmne/ruby_llm) by @crmne
@@ -196,7 +196,7 @@ Fino.setting(:model, at: :llm).refresh!
 # I, [2026-03-22T18:23:13.615934 #67293]  INFO -- RubyLLM: Fetching models from models.dev API...
 ```
 
-### Use with RubyLLM
+#### Use with RubyLLM
 
 ```ruby
 chat = RubyLLM.chat(model: Fino.setting(:model, at: :llm).value)
