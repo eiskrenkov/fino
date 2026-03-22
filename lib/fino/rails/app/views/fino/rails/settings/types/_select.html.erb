@@ -26,7 +26,7 @@
           <span class="font-medium truncate text-gray-900 group-hover:text-white"><%= option.label %></span>
           <% if option.metadata.present? %>
             <span class="text-xs text-gray-500 group-hover:text-indigo-200 mt-0.5">
-              <%= option.metadata.values.compact.join(" \u00B7 ") %>
+              <%= option.metadata.values.compact.join(" · ") %>
             </span>
           <% end %>
         </div>
@@ -45,10 +45,27 @@ if (!window._finoSelectInitialized) {
   window._finoSelectInitialized = true;
 
   document.addEventListener('click', function(e) {
-    const trigger = e.target.closest('.fino-select-trigger');
+    var refreshBtn = e.target.closest('.fino-select-refresh');
+    if (refreshBtn) {
+      var url = refreshBtn.getAttribute('data-refresh-url');
+      var csrfToken = document.querySelector('meta[name="csrf-token"]');
+
+      refreshBtn.disabled = true;
+
+      fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrfToken ? csrfToken.content : '' }
+      }).then(function(response) {
+        if (response.ok) window.location.reload();
+      });
+
+      return;
+    }
+
+    var trigger = e.target.closest('.fino-select-trigger');
     if (trigger) {
-      const container = trigger.closest('.fino-select');
-      const optionsList = container.querySelector('.fino-select-options');
+      var container = trigger.closest('.fino-select');
+      var optionsList = container.querySelector('.fino-select-options');
 
       document.querySelectorAll('.fino-select-options').forEach(function(el) {
         if (el !== optionsList) el.classList.add('hidden');
@@ -58,11 +75,11 @@ if (!window._finoSelectInitialized) {
       return;
     }
 
-    const option = e.target.closest('.fino-select-option');
+    var option = e.target.closest('.fino-select-option');
     if (option) {
-      const container = option.closest('.fino-select');
-      const value = option.getAttribute('data-value');
-      const label = option.getAttribute('data-label');
+      var container = option.closest('.fino-select');
+      var value = option.getAttribute('data-value');
+      var label = option.getAttribute('data-label');
 
       container.querySelector('.fino-select-value').value = value;
       container.querySelector('.fino-select-label').textContent = label;

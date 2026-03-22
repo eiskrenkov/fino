@@ -83,6 +83,126 @@ Fino.disable(:maintenance_mode, for: "qa")
 Fino.enabled?(:maintenance_mode, for: "qa") #=> false
 ```
 
+### Select setting
+
+The simplest way to define select setting in fino is the following
+
+```ruby
+Fino.configure do
+  # ...
+  section :storefront, label: "Storefront" do
+    setting :purchase_button_color,
+            :select,
+            options: [
+              Fino::Settings::Select::Option.new(label: "Red", value: "red"),
+              Fino::Settings::Select::Option.new(label: "Blue", value: "blue")
+            ],
+            default: "red",
+            description: "Color of the purchase button"
+  end
+  # ...
+end
+```
+
+Options must be an array of `Fino::Settings::Select::Option` instances
+
+Then you can interact with the setting like that
+
+```ruby
+# Read selected option
+selected_option = Fino.value(:purchase_button_color, at: :storefront)
+# => #<Fino::Settings::Select::Option:0x0000000124fecd90 @label="Red", @metadata={}, @value="red">
+
+# Read setting value
+selected_option.value
+# => "red"
+
+# Read options
+Fino.setting(:purchase_button_color, at: :storefront).options
+# => [#<Fino::Settings::Select::Option:0x0000000124fecd90 @label="Red", @metadata={}, @value="red">,
+      #<Fino::Settings::Select::Option:0x0000000124fecca0 @label="Blue", @metadata={}, @value="blue">]
+```
+
+## Dynamic option
+
+Options can also be defined dynamically using any callable object. Let's take a look at dynamic options in an example
+of LLM model setting using [RubyLLM](https://github.com/crmne/ruby_llm) by @crmne
+
+To define dynamic select options, use `:select` as setting type and provide a callable to `options`. Your object's
+`call` method might be called with `refresh` option which is true only when user initiates options refresh manually.
+This is useful for updating models list in RubyLLM for example
+
+```ruby
+section :llm, label: "LLM" do
+  setting :model,
+          :select,
+          options: proc { |refresh:|
+            RubyLLM.models.refresh! if refresh
+            models = RubyLLM.models.chat_models
+
+            openai_models = models.by_provider(:openai)
+            anthropic_models = models.by_provider(:anthropic)
+
+            build_pricing_label = proc do |model|
+              text_pricing = model.pricing&.text_tokens
+              next unless text_pricing && text_pricing.input && text_pricing.output
+
+              "$#{text_pricing.input} / $#{text_pricing.output} per 1M tokens"
+            end
+
+            [*openai_models, *anthropic_models].map do |model|
+              Fino::Settings::Select::Option.new(
+                label: model.name,
+                value: model.id,
+                metadata: {
+                  provider: model.provider_class.name,
+                  pricing: build_pricing_label.call(model)
+                }.compact
+              )
+            end
+          },
+          default: "gpt-5",
+          description: "Chat model for AI-powered features"
+  end
+end
+```
+
+```ruby
+# Read selected option
+selected_option = Fino.setting(:model, at: :llm).value
+# => #<Fino::Settings::Select::Option:0x0000000126257728
+#     @label="GPT-4",
+#     @metadata={provider: "OpenAI", pricing: "$30 / $60 per 1M tokens"},
+#     @value="gpt-4">
+
+# Read setting value
+selected_option.value
+# => "gpt-4"
+
+# Read options
+Fino.setting(:model, at: :llm).options
+# => [#<Fino::Settings::Select::Option:0x000000012629e448
+#      @label="GPT-5.3 Codex Spark",
+#      @metadata={provider: "OpenAI", pricing: "$1.75 / $14 per 1M tokens"},
+#      @value="gpt-5.3-codex-spark">,
+#     #<Fino::Settings::Select::Option:0x000000012629e1c8
+#      @label="GPT-5.4",
+#      @metadata={provider: "OpenAI", pricing: "$2.5 / $15 per 1M tokens"},
+#      @value="gpt-5.4">, ...]
+
+# Refresh options
+Fino.setting(:model, at: :llm).refresh!
+# I, [2026-03-22T18:23:13.615270 #67293]  INFO -- RubyLLM: Fetching models from providers:
+# I, [2026-03-22T18:23:13.615934 #67293]  INFO -- RubyLLM: Fetching models from models.dev API...
+```
+
+### Use with RubyLLM
+
+```ruby
+chat = RubyLLM.chat(model: Fino.setting(:model, at: :llm).value)
+chat.ask "Why Ruby?"
+```
+
 ### Overrides
 
 ```ruby

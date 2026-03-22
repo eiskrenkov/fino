@@ -24,7 +24,7 @@ Layout/LineLength:
 
 Metrics/BlockLength:
   Exclude:
-    - "spec/dummy/config/initializers/fino.rb"
+    - "spec/**/*"
 
 Naming/FileName:
   Exclude:

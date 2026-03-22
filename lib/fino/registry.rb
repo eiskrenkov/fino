@@ -3,7 +3,6 @@
 class Fino::Registry
   DuplicateSetting = Class.new(Fino::Error)
   UnknownSetting = Class.new(Fino::Error)
-  UnknownOption = Class.new(Fino::Error)
 
   class DSL
     class SectionDSL
@@ -52,7 +51,7 @@ class Fino::Registry
 
   using Fino::Ext::Hash
 
-  attr_reader :setting_definitions, :section_definitions
+  attr_reader :setting_definitions, :section_definitions, :option_registry
 
   def initialize
     @setting_definitions = Set.new
@@ -61,8 +60,7 @@ class Fino::Registry
     @section_definitions = Set.new
     @section_definitions_by_name = {}
 
-    @options_by_select_setting_path = {}
-    @indexed_options_by_select_setting_path = {}
+    @option_registry = Fino::Settings::Select::OptionRegistry.new
   end
 
   def setting_definition(setting_name, at: nil)
@@ -90,16 +88,6 @@ class Fino::Registry
     @section_definitions_by_name[section_name.to_s]
   end
 
-  def option(value, *path)
-    @indexed_options_by_select_setting_path.dig(*path.compact.map(&:to_s)).fetch(value) do
-      raise UnknownOption, "Unknown option: #{value} for setting: #{path.compact.join('.')}"
-    end
-  end
-
-  def options(*path)
-    @options_by_select_setting_path.dig(*path.compact.map(&:to_s))
-  end
-
   def register(setting_definition)
     unless @setting_definitions.add?(setting_definition)
       raise DuplicateSetting, "#{setting_definition.setting_name} is already registered at #{setting_definition.key}"
@@ -108,12 +96,15 @@ class Fino::Registry
     path = setting_definition.path.map(&:to_s)
 
     @setting_definitions_by_path.deep_set(setting_definition, *path)
-    return unless setting_definition.type == :select
 
-    options = setting_definition.options.fetch(:values, -> { [] }).call
+    register_type_specific_data(setting_definition, path)
+  end
 
-    @options_by_select_setting_path.deep_set(options, *path)
-    @indexed_options_by_select_setting_path.deep_set(options.index_by(&:value), *path)
+  def register_type_specific_data(setting_definition, path)
+    case setting_definition.type
+    when Fino::Settings::Select.type_identifier
+      @option_registry.register(setting_definition.options.fetch(:options, []), path)
+    end
   end
 
   def register_section(section_definition)

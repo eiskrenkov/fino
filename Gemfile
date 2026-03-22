@@ -22,4 +22,4 @@ gem "sqlite3", "~> #{ENV['SQLITE_VERSION'] || '2.7'}"
 gem "rspec", "~> 3.0"
 gem "rubocop", "~> 1.80.1", require: false
 
-gem "ruby_llm", "~> 1.0"
+gem "ruby_llm", "~> 1.14"

@@ -10,5 +10,6 @@ Fino::Rails::Engine.routes.draw do
 
     get ":section/:setting", to: "settings#edit", as: :edit_setting
     put ":section/:setting", to: "settings#update", as: :update_setting
+    post ":section/:setting/refresh", to: "settings#refresh", as: :refresh_setting
   end
 end
