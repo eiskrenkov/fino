@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-if Rails.env.development? && !ENV["DISABLE_REDIS_LOGGING"]
+if Rails.env.development? && ENV["FINO_DUMMY_ADAPTER"] == "redis" && !ENV["DISABLE_REDIS_LOGGING"]
   module LoggingMiddleware
     PREFIX = "[Redis]"
 

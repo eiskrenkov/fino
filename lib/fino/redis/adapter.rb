@@ -93,7 +93,9 @@ class Fino::Redis::Adapter
   # A/B testing analysis
   #
 
-  def record_ab_testing_conversion(setting_definition, variant, scope, timestamp_ms)
+  def record_ab_testing_conversion(setting_definition, variant, scope, time)
+    timestamp_ms = (time.to_f * 1000).to_i
+
     key = build_redis_key(CONVERSIONS_NAMESPACE, setting_definition.key, variant.id)
     tracking_key = build_redis_key(CONVERSIONS_KEYS_NAMESPACE, setting_definition.key)
 

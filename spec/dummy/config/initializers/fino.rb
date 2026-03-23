@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require "fino-redis"
-require "fino-solid"
-
 Rails.application.configure do
   config.fino.instrument = Rails.env.development?
   config.fino.log = Rails.env.development?
@@ -11,15 +8,19 @@ Rails.application.configure do
   config.fino.instrument = true
 end
 
-$redis = Redis.new(host: ENV.fetch("FINO_DUMMY_REDIS_HOST", "redis.fino.orb.local")) # rubocop:disable Style/GlobalVars
-
 Fino.configure do
   case ENV.fetch("FINO_DUMMY_ADAPTER", nil)
   when "redis"
+    require "fino-redis"
+
+    $redis = Redis.new(host: ENV.fetch("FINO_DUMMY_REDIS_HOST", "redis.fino.orb.local")) # rubocop:disable Style/GlobalVars
+
     adapter do
       Fino::Redis::Adapter.new($redis, namespace: "fino_dummy") # rubocop:disable Style/GlobalVars
     end
   else
+    require "fino-solid"
+
     adapter do
       Fino::Solid::Adapter.new
     end

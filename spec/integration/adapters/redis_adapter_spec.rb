@@ -38,7 +38,7 @@ RSpec.describe "Redis adapter integration", type: :integration do
 
   it_behaves_like "fino adapter integration"
 
-  describe "A/B testing analysis" do
+  describe "A/B testing analysis (Redis-specific)" do
     before do
       Fino.set(api_rate_limit: 1000, variants: { 30.0 => 3000, 20.0 => 4000 })
     end
@@ -50,33 +50,6 @@ RSpec.describe "Redis adapter integration", type: :integration do
     end
 
     describe "#record_ab_testing_conversion" do
-      it "records a conversion" do
-        Fino.convert!(:api_rate_limit, for: "user_1")
-
-        analysis = Fino.analyse(:api_rate_limit)
-
-        expect(analysis.total_conversions).to eq(1)
-      end
-
-      it "records only the first conversion per scope (NX semantics)" do
-        Fino.convert!(:api_rate_limit, for: "user_1", time: Time.new(2026, 3, 1))
-        Fino.convert!(:api_rate_limit, for: "user_1", time: Time.new(2026, 3, 20))
-
-        analysis = Fino.analyse(:api_rate_limit)
-
-        expect(analysis.total_conversions).to eq(1)
-      end
-
-      it "records conversions for different scopes" do
-        Fino.convert!(:api_rate_limit, for: "user_1")
-        Fino.convert!(:api_rate_limit, for: "user_2")
-        Fino.convert!(:api_rate_limit, for: "user_5")
-
-        analysis = Fino.analyse(:api_rate_limit)
-
-        expect(analysis.total_conversions).to eq(3)
-      end
-
       it "tracks conversion keys in a set for later cleanup" do
         Fino.convert!(:api_rate_limit, for: "user_1")
 
@@ -99,68 +72,9 @@ RSpec.describe "Redis adapter integration", type: :integration do
         expect(ttl).to be > 0
         expect(ttl).to be <= 7 * 24 * 60 * 60
       end
-
-      it "accepts custom time" do
-        custom_time = Time.new(2026, 3, 15, 12, 0, 0)
-        Fino.convert!(:api_rate_limit, for: "user_1", time: custom_time)
-
-        analysis = Fino.analyse(:api_rate_limit)
-        variant_with_conversion = analysis.variants_data.find { |vd| vd.conversions_count > 0 }
-
-        expect(variant_with_conversion.daily_conversions).to eq("2026-03-15" => 1)
-      end
-    end
-
-    describe "#read_ab_testing_conversions" do
-      it "returns per-variant conversion data" do
-        Fino.convert!(:api_rate_limit, for: "user_1")
-        Fino.convert!(:api_rate_limit, for: "user_2")
-        Fino.convert!(:api_rate_limit, for: "user_5")
-
-        analysis = Fino.analyse(:api_rate_limit)
-
-        expect(analysis.variants_data.size).to eq(3)
-        expect(analysis.variants_data.map(&:conversions_count).sum).to eq(3)
-      end
-
-      it "aggregates daily conversions correctly" do
-        Fino.convert!(:api_rate_limit, for: "user_day1", time: Time.new(2026, 3, 10))
-        Fino.convert!(:api_rate_limit, for: "user_day2", time: Time.new(2026, 3, 10))
-        Fino.convert!(:api_rate_limit, for: "user_day3", time: Time.new(2026, 3, 11))
-
-        analysis = Fino.analyse(:api_rate_limit)
-        all_daily = analysis.variants_data.each_with_object({}) do |vd, memo|
-          vd.daily_conversions.each { |date, count| memo[date] = (memo[date] || 0) + count }
-        end
-
-        expect(all_daily["2026-03-10"]).to eq(2)
-        expect(all_daily["2026-03-11"]).to eq(1)
-      end
-
-      it "returns empty data when no conversions exist" do
-        analysis = Fino.analyse(:api_rate_limit)
-
-        expect(analysis.any_conversions?).to eq(false)
-        expect(analysis.total_conversions).to eq(0)
-        analysis.variants_data.each do |vd|
-          expect(vd.conversions_count).to eq(0)
-          expect(vd.daily_conversions).to be_empty
-        end
-      end
     end
 
     describe "#clear_ab_testing_conversions" do
-      it "removes all conversion data" do
-        Fino.convert!(:api_rate_limit, for: "user_1")
-        Fino.convert!(:api_rate_limit, for: "user_5")
-
-        expect(Fino.analyse(:api_rate_limit).total_conversions).to eq(2)
-
-        Fino.reset_analysis!(:api_rate_limit)
-
-        expect(Fino.analyse(:api_rate_limit).total_conversions).to eq(0)
-      end
-
       it "removes the tracking set" do
         Fino.convert!(:api_rate_limit, for: "user_1")
 
@@ -170,14 +84,6 @@ RSpec.describe "Redis adapter integration", type: :integration do
         Fino.reset_analysis!(:api_rate_limit)
 
         expect(TestHelpers.redis.exists?(tracking_key)).to eq(false)
-      end
-
-      it "does not affect the setting value" do
-        Fino.convert!(:api_rate_limit, for: "user_1")
-        Fino.reset_analysis!(:api_rate_limit)
-
-        expect(Fino.value(:api_rate_limit)).to eq(1000)
-        expect(Fino.setting(:api_rate_limit).experiment).not_to be_nil
       end
     end
   end
