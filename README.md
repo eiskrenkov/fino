@@ -238,7 +238,7 @@ Fino.value(:model, at: :openai, for: "user_2") #=> "gpt-5"
 
 #### Experiment analysis
 
-Some Fino adapters support A/B testing analysis, e.g built-in Redis adapter
+Fino adapters might support A/B testing analysis, both built-in `solid` and `redis` adapters do
 
 When you run an A/B test for a setting, fino automatically calculates variant based on a stable identifier you pass as
 a `for` option
@@ -415,6 +415,14 @@ end
      }
    end
    ```
+
+## Development
+
+To create and mugrate dummy app db to test solid adapter, do
+
+```bash
+cd spec/dummy && bin/rails db:create db:migrate
+```
 
 ## Releasing
 
