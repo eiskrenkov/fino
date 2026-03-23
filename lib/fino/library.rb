@@ -4,6 +4,7 @@ require "forwardable"
 
 class Fino::Library
   include FeatureTogglesSupport
+  include AbTestingAnalysisSupport
 
   def initialize(configuration)
     @configuration = configuration

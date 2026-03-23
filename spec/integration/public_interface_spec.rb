@@ -627,4 +627,97 @@ RSpec.describe "Public interface", type: :integration do
       end
     end
   end
+
+  describe "#convert and #analyse" do
+    before do
+      Fino.set(
+        api_rate_limit: 1000,
+        variants: { 30.0 => 3000, 20.0 => 4000 }
+      )
+    end
+
+    context "when setting has no experiment" do
+      before { Fino.set(maintenance_mode: false) }
+
+      it "convert returns nil" do
+        expect(Fino.convert(:maintenance_mode, for: "user_1")).to eq(nil)
+      end
+
+      it "convert! raises SettingNotAbTested" do
+        expect { Fino.convert!(:maintenance_mode, for: "user_1") }.to raise_error(
+          Fino::Library::AbTestingAnalysisSupport::SettingNotAbTested
+        )
+      end
+
+      it "analyse raises SettingNotAbTested" do
+        expect { Fino.analyse(:maintenance_mode) }.to raise_error(
+          Fino::Library::AbTestingAnalysisSupport::SettingNotAbTested
+        )
+      end
+    end
+
+    context "when setting has an experiment" do
+      it "records a conversion and returns it in analysis" do
+        Fino.convert(:api_rate_limit, for: "user_1")
+
+        analysis = Fino.analyse(:api_rate_limit)
+
+        expect(analysis).to be_a(Fino::AbTesting::Analysis)
+        expect(analysis.total_conversions).to eq(1)
+        expect(analysis.any_conversions?).to eq(true)
+      end
+
+      it "records first conversion only per identifier" do
+        Fino.convert(:api_rate_limit, for: "user_1")
+        Fino.convert(:api_rate_limit, for: "user_1")
+
+        analysis = Fino.analyse(:api_rate_limit)
+
+        expect(analysis.total_conversions).to eq(1)
+      end
+
+      it "records conversions for different identifiers" do
+        Fino.convert(:api_rate_limit, for: "user_1")
+        Fino.convert(:api_rate_limit, for: "user_2")
+        Fino.convert(:api_rate_limit, for: "user_5")
+
+        analysis = Fino.analyse(:api_rate_limit)
+
+        expect(analysis.total_conversions).to eq(3)
+      end
+
+      it "returns per-variant data with daily conversions" do
+        Fino.convert(:api_rate_limit, for: "user_1")
+        Fino.convert(:api_rate_limit, for: "user_5")
+
+        analysis = Fino.analyse(:api_rate_limit)
+        today = Time.now.to_date.to_s
+
+        variant_with_conversions = analysis.variants_data.select { |vd| vd.conversions_count > 0 }
+
+        expect(variant_with_conversions).not_to be_empty
+        variant_with_conversions.each do |vd|
+          expect(vd.daily_conversions.keys).to include(today)
+        end
+      end
+
+      it "returns empty analysis when no conversions recorded" do
+        analysis = Fino.analyse(:api_rate_limit)
+
+        expect(analysis.any_conversions?).to eq(false)
+        expect(analysis.total_conversions).to eq(0)
+      end
+
+      it "resets analysis via reset_analysis!" do
+        Fino.convert(:api_rate_limit, for: "user_1")
+        Fino.convert(:api_rate_limit, for: "user_5")
+
+        expect(Fino.analyse(:api_rate_limit).total_conversions).to eq(2)
+
+        Fino.reset_analysis!(:api_rate_limit)
+
+        expect(Fino.analyse(:api_rate_limit).total_conversions).to eq(0)
+      end
+    end
+  end
 end

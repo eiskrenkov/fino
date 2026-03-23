@@ -7,6 +7,9 @@ class Fino::Redis::Adapter
 
   DEFAULT_REDIS_NAMESPACE = "fino"
   SETTINGS_NAMESPACE = "s"
+  CONVERSIONS_NAMESPACE = "c"
+  CONVERSIONS_KEYS_NAMESPACE = "ck"
+  CONVERSIONS_TTL = 7 * 24 * 60 * 60 # 7 days
   PERSISTED_SETTINGS_KEYS_REDIS_KEY = "psl"
   SCOPE_PREFIX = "s"
   VARIANT_PREFIX = "v"
@@ -83,6 +86,42 @@ class Fino::Redis::Adapter
       percentage = key.split("/", 3)[1]
 
       memo << { percentage: percentage.to_f, value: value }
+    end
+  end
+
+  #
+  # A/B testing analysis
+  #
+
+  def record_ab_testing_conversion(setting_definition, variant, scope, timestamp_ms)
+    key = build_redis_key(CONVERSIONS_NAMESPACE, setting_definition.key, variant.id)
+    tracking_key = build_redis_key(CONVERSIONS_KEYS_NAMESPACE, setting_definition.key)
+
+    redis.pipelined do |pipeline|
+      pipeline.zadd(key, timestamp_ms, scope.to_s, nx: true)
+      pipeline.expire(key, CONVERSIONS_TTL)
+      pipeline.sadd(tracking_key, key)
+    end
+  end
+
+  def read_ab_testing_conversions(setting_definition, variants)
+    keys = variants.map { |v| build_redis_key(CONVERSIONS_NAMESPACE, setting_definition.key, v.id) }
+
+    results = redis.pipelined do |pipeline|
+      keys.each { |key| pipeline.zrange(key, 0, -1, withscores: true) }
+    end
+
+    variants.zip(results).to_h
+  end
+
+  def clear_ab_testing_conversions(setting_key)
+    tracking_key = build_redis_key(CONVERSIONS_KEYS_NAMESPACE, setting_key)
+    keys = redis.smembers(tracking_key)
+    return unless keys.any?
+
+    redis.pipelined do |pipeline|
+      keys.each { |key| pipeline.del(key) }
+      pipeline.del(tracking_key)
     end
   end
 

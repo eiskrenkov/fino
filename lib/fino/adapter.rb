@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
 module Fino::Adapter
+  AB_TESTING_ANALYSIS_METHODS = %i[record_ab_testing_conversion read_ab_testing_conversions clear_ab_testing_conversions].freeze
+
+  def supports_ab_testing_analysis?
+    AB_TESTING_ANALYSIS_METHODS.all? { |method| respond_to?(method) }
+  end
+
   def read(setting_key)
     raise NotImplementedError
   end

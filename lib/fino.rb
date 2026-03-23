@@ -47,7 +47,11 @@ module Fino
                    :settings,
                    :slice,
                    :set,
-                   :add_override
+                   :add_override,
+                   :convert,
+                   :convert!,
+                   :analyse,
+                   :reset_analysis!
 
     def library
       raise NotImplementedError

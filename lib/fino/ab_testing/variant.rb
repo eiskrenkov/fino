@@ -5,17 +5,23 @@ class Fino::AbTesting::Variant
     def inspect
       "Fino::AbTesting::Variant::CONTROL_VALUE"
     end
+
+    def to_s
+      "control"
+    end
   end.new
 
   include Fino::PrettyInspectable
 
-  attr_reader :id, :percentage, :value
+  attr_reader :percentage, :value
 
   def initialize(percentage:, value:)
-    @id = SecureRandom.uuid
-
     @percentage = percentage.to_f
     @value = value
+  end
+
+  def id
+    "#{percentage}-#{value}"
   end
 
   private

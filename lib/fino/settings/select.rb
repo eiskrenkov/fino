@@ -9,6 +9,10 @@ class Fino::Settings::Select
       @value = value
       @metadata = metadata
     end
+
+    def to_s
+      value.to_s
+    end
   end
 
   class OptionRegistry

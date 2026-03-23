@@ -132,8 +132,50 @@
         </div>
       </div>
     </div>
+
   </div>
 </div>
+
+<% analysis = local_assigns[:analysis] %>
+<% if analysis %>
+  <div class="px-4 sm:px-0">
+  </div>
+
+  <div class="bg-white shadow-xs outline outline-gray-900/5 sm:rounded-xl md:col-span-2">
+    <div class="px-4 py-6 sm:p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base/7 font-semibold text-gray-900">Analysis</h3>
+        <% if analysis.any_conversions? %>
+          <button type="button"
+                  class="fino-reset-analysis cursor-pointer rounded-md bg-white px-2.5 py-1.5 text-xs font-semibold text-red-600 shadow-xs inset-ring inset-ring-red-200 hover:bg-red-50"
+                  data-reset-url="<%= reset_analysis_path(section: setting.section_name || :general, setting: setting.name) %>">
+            Reset analysis
+          </button>
+        <% end %>
+      </div>
+
+      <% if analysis.any_conversions? %>
+        <div class="border-b border-gray-200 mb-4">
+          <nav class="-mb-px flex space-x-8" id="analysis-chart-tabs">
+            <a href="#" data-chart="bar" class="analysis-chart-tab border-b-2 border-indigo-500 px-1 py-3 text-sm font-medium text-indigo-600" aria-current="page">Conversions</a>
+            <a href="#" data-chart="line" class="analysis-chart-tab border-b-2 border-transparent px-1 py-3 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">Over time</a>
+          </nav>
+        </div>
+        <div id="fino-chart-bar">
+          <canvas id="fino-conversions-bar-chart" height="250"></canvas>
+        </div>
+        <div id="fino-chart-line" class="hidden">
+          <canvas id="fino-conversions-line-chart" height="250"></canvas>
+        </div>
+      <% else %>
+        <div class="text-center py-6">
+          <p class="text-sm text-gray-500">No conversions recorded yet</p>
+          <p class="text-xs text-gray-400 mt-1">Use <code class="bg-gray-100 px-1 py-0.5 rounded">Fino.convert!</code> to record conversions</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
 
 <div id="variant-templates" style="display: none;">
   <%= form.fields_for :template do |template_form| %>
@@ -328,3 +370,116 @@ document.addEventListener('DOMContentLoaded', function() {
   recalculatePercentages();
 });
 </script>
+
+<% if analysis&.any_conversions? %>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var CHART_COLORS = [
+    'rgb(99, 102, 241)',
+    'rgb(249, 115, 22)',
+    'rgb(34, 197, 94)',
+    'rgb(234, 179, 8)',
+    'rgb(236, 72, 153)',
+    'rgb(14, 165, 233)'
+  ];
+
+  var variantsData = <%= raw analysis.variants_data.map { |vd|
+    value = vd.variant.value
+    label = if value == Fino::AbTesting::Variant::CONTROL_VALUE
+              "Control (#{vd.variant.percentage}%)"
+            elsif value.is_a?(Fino::Settings::Select::Option)
+              "#{value.label} (#{vd.variant.percentage}%)"
+            else
+              "#{value} (#{vd.variant.percentage}%)"
+            end
+
+    {
+      label: label,
+      count: vd.conversions_count,
+      daily: vd.daily_conversions
+    }
+  }.to_json %>;
+
+  var allDates = {};
+  variantsData.forEach(function(v) {
+    Object.keys(v.daily).forEach(function(d) { allDates[d] = true; });
+  });
+  var sortedDates = Object.keys(allDates).sort();
+
+  new Chart(document.getElementById('fino-conversions-bar-chart'), {
+    type: 'bar',
+    data: {
+      labels: variantsData.map(function(v) { return v.label; }),
+      datasets: [{
+        data: variantsData.map(function(v) { return v.count; }),
+        backgroundColor: variantsData.map(function(_, i) { return CHART_COLORS[i % CHART_COLORS.length]; })
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+  });
+
+  new Chart(document.getElementById('fino-conversions-line-chart'), {
+    type: 'line',
+    data: {
+      labels: sortedDates,
+      datasets: variantsData.map(function(v, i) {
+        return {
+          label: v.label,
+          data: sortedDates.map(function(d) { return v.daily[d] || 0; }),
+          borderColor: CHART_COLORS[i % CHART_COLORS.length],
+          tension: 0.3,
+          fill: false
+        };
+      })
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+  });
+
+  document.getElementById('analysis-chart-tabs').addEventListener('click', function(e) {
+    var tab = e.target.closest('.analysis-chart-tab');
+    if (!tab) return;
+    e.preventDefault();
+
+    document.querySelectorAll('.analysis-chart-tab').forEach(function(t) {
+      t.classList.remove('border-indigo-500', 'text-indigo-600');
+      t.classList.add('border-transparent', 'text-gray-500');
+      t.removeAttribute('aria-current');
+    });
+    tab.classList.remove('border-transparent', 'text-gray-500');
+    tab.classList.add('border-indigo-500', 'text-indigo-600');
+    tab.setAttribute('aria-current', 'page');
+
+    var chartType = tab.getAttribute('data-chart');
+    document.getElementById('fino-chart-bar').classList.toggle('hidden', chartType !== 'bar');
+    document.getElementById('fino-chart-line').classList.toggle('hidden', chartType !== 'line');
+  });
+
+  var resetBtn = document.querySelector('.fino-reset-analysis');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function() {
+      if (!confirm('This will permanently delete all analysis data for this experiment. Continue?')) return;
+
+      var url = resetBtn.getAttribute('data-reset-url');
+      var csrfToken = document.querySelector('meta[name="csrf-token"]');
+
+      resetBtn.disabled = true;
+
+      fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrfToken ? csrfToken.content : '' }
+      }).then(function(response) {
+        if (response.ok || response.redirected) window.location.reload();
+      });
+    });
+  }
+});
+</script>
+<% end %>

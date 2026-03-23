@@ -9,11 +9,20 @@ class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
 
   def edit
     @setting = Fino.setting(setting_name, at: section_name)
+    @analysis = Fino.analyse(setting_name, at: section_name) if @setting.ab_tested?
+  rescue Fino::Library::AbTestingAnalysisSupport::AdapterDoesNotSupportAbTestingAnalysis
+    nil
   end
 
   def refresh
     setting = Fino.setting(setting_name, at: section_name)
     setting.refresh!
+
+    head :ok
+  end
+
+  def reset_analysis
+    Fino.reset_analysis!(setting_name, at: section_name)
 
     head :ok
   end

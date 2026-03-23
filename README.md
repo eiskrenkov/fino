@@ -236,6 +236,44 @@ Fino.value(:model, at: :openai, for: "user_1") #=> "gpt-6"
 Fino.value(:model, at: :openai, for: "user_2") #=> "gpt-5"
 ```
 
+#### Experiment analysis
+
+Some Fino adapters support A/B testing analysis, e.g built-in Redis adapter
+
+When you run an A/B test for a setting, fino automatically calculates variant based on a stable identifier you pass as
+a `for` option
+
+```ruby
+Fino.set(model: "gpt-5", at: :openai, variants: { 20.0 => "gpt-6" })
+
+Fino.value(:model, at: :openai, for: "user_1") #=> "gpt-6"
+Fino.value(:model, at: :openai, for: "user_1") #=> "gpt-6"
+
+Fino.value(:model, at: :openai, for: "user_2") #=> "gpt-5"
+```
+
+Later in your code, when user performs a "desired" action, simply call
+
+```ruby
+Fino.convert!(:model, at: :openai, for: "user_2")
+```
+
+to record a "convertion" for `user_2`. As Fino knows the right variant for `user_2`, conversion will be counted
+todards it. Thanks to that later you'll be able to call
+
+```ruby
+Fino.analyse(:model, at: :openai)
+```
+
+to receive a detailed report over variants performance. Also bar charts comparing all variants and a chart displaying
+amount of conversions over time per variant will be accessible on UI with `fino-rails`
+
+To reset analysis data for an experiment:
+
+```ruby
+Fino.reset_analysis!(:model, at: :openai)
+```
+
 ### Unit conversion
 
 Fino is able to convert numeric settings into various units
