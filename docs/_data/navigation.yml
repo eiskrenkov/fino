@@ -1,0 +1,6 @@
+- title: Docs
+  url: /docs/
+  collections:
+    - getting_started
+    - guides
+    - features
