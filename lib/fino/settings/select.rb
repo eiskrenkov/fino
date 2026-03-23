@@ -62,7 +62,7 @@ class Fino::Settings::Select
     def resolve(path, force: false)
       string_path = path.compact.map(&:to_s)
 
-      return if !force && @options.dig(*string_path)
+      return if !force && @options.dig(*string_path).present?
 
       builder = @builders.dig(*string_path)
       options = builder.respond_to?(:call) ? builder.call(refresh: force) : builder

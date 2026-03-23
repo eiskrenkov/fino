@@ -62,6 +62,36 @@ module Fino
         end
       end
 
+      def record_ab_testing_conversion(setting_definition, variant, scope, time)
+        Fino::Solid::Conversion.insert(
+          {
+            setting_key: setting_definition.key,
+            variant_id: variant.id,
+            scope: scope.to_s,
+            converted_at: time
+          },
+          unique_by: :idx_fino_conversions_unique
+        )
+      end
+
+      def read_ab_testing_conversions(setting_definition, variants)
+        rows =
+          Fino::Solid::Conversion
+          .where(setting_key: setting_definition.key, variant_id: variants.map(&:id))
+          .pluck(:variant_id, :scope, :converted_at)
+
+        grouped = rows.group_by(&:first)
+
+        variants.each_with_object({}) do |variant, memo|
+          entries = grouped.fetch(variant.id, [])
+          memo[variant] = entries.map { |_vid, scope, converted_at| [scope, (converted_at.to_f * 1000).to_i] }
+        end
+      end
+
+      def clear_ab_testing_conversions(setting_key)
+        Fino::Solid::Conversion.where(setting_key: setting_key).delete_all
+      end
+
       def fetch_raw_variants_from(raw_adapter_data)
         raw_adapter_data.each_with_object([]) do |(key, value), memo|
           next unless key.start_with?("#{VARIANT_PREFIX}/")

@@ -11,9 +11,8 @@ module Fino::Library::AbTestingAnalysisSupport
 
     setting_instance = fetch_ab_testable_setting(setting_name, at: at)
     variant = setting_instance.experiment.variant(for: scope)
-    timestamp_ms = (time.to_f * 1000).to_i
 
-    adapter.record_ab_testing_conversion(setting_instance.definition, variant, scope, timestamp_ms)
+    adapter.record_ab_testing_conversion(setting_instance.definition, variant, scope, time)
   end
 
   def convert(setting_name, at: nil, time: Time.now, **context)

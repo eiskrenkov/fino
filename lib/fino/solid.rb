@@ -16,6 +16,7 @@ end
 
 require "fino/solid/record"
 require "fino/solid/setting"
+require "fino/solid/conversion"
 require "fino/solid/adapter"
 require "fino/solid/railtie" if defined?(Rails::Railtie)
 

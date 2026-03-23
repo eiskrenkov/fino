@@ -11,8 +11,10 @@ module Fino
 
         source_root File.expand_path("templates", __dir__)
 
-        def copy_migration
+        def copy_migrations
           migration_template "create_fino_settings.rb.tt", File.join(db_migrate_path, "create_fino_settings.rb")
+          migration_template "create_fino_ab_testing_conversions.rb.tt",
+                             File.join(db_migrate_path, "create_fino_ab_testing_conversions.rb")
         end
 
         private

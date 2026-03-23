@@ -44,4 +44,10 @@ RSpec.describe "Solid adapter integration", type: :integration do
   end
 
   it_behaves_like "fino adapter integration"
+
+  describe "#supports_ab_testing_analysis?" do
+    it "returns true" do
+      expect(SolidTestHelpers.solid_adapter.supports_ab_testing_analysis?).to eq(true)
+    end
+  end
 end
