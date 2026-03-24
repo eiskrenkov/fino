@@ -37,7 +37,7 @@ module Fino
 
         Fino::Solid::Setting.upsert(
           { key: setting_definition.key, data: data },
-          unique_by: :key
+          **unique_by_option(:key)
         )
       end
 
@@ -70,7 +70,7 @@ module Fino
             scope: scope.to_s,
             converted_at: time
           },
-          unique_by: :idx_fino_conversions_unique
+          **unique_by_option(:idx_fino_conversions_unique)
         )
       end
 
@@ -100,6 +100,18 @@ module Fino
 
           memo << { percentage: percentage.to_f, value: value }
         end
+      end
+
+      private
+
+      def unique_by_option(constraint)
+        return {} if mysql_adapter?
+
+        { unique_by: constraint }
+      end
+
+      def mysql_adapter?
+        Fino::Solid::Record.connection.adapter_name.match?(/Mysql2|Trilogy/i)
       end
     end
   end

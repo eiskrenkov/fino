@@ -3,11 +3,21 @@
 require "spec_helper"
 
 RSpec.describe "Solid adapter integration", type: :integration do
+  adapter_name = ENV.fetch("FINO_TEST_ADAPTER", "sqlite3")
+
   before(:all) do
-    SolidTestHelpers.setup_database(:sqlite3)
+    skip "Solid adapter not under test" if adapter_name == "redis"
+
+    begin
+      SolidTestHelpers.setup_database(adapter_name.to_sym)
+    rescue => e
+      raise if ENV["CI"]
+
+      skip "#{adapter_name} not available: #{e.message}"
+    end
 
     Fino.reconfigure do
-      adapter { SolidTestHelpers.solid_adapter }
+      adapter { Fino::Solid::Adapter.new }
       cache { TestHelpers.cache }
 
       settings do
@@ -47,7 +57,7 @@ RSpec.describe "Solid adapter integration", type: :integration do
 
   describe "#supports_ab_testing_analysis?" do
     it "returns true" do
-      expect(SolidTestHelpers.solid_adapter.supports_ab_testing_analysis?).to eq(true)
+      expect(Fino::Solid::Adapter.new.supports_ab_testing_analysis?).to eq(true)
     end
   end
 end

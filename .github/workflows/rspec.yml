@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby-version: ["3.2", "3.3", "3.4", "4.0"]
+        ruby-version: ["3.2", "3.3", "3.4"]
 
     services:
       redis:
@@ -35,6 +35,75 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
+          bundler-cache: true
+
+      - run: bundle exec rspec
+
+  adapters:
+    name: "Ruby 4.0 / ${{ matrix.adapter }}"
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        adapter: [redis, sqlite3, postgresql, mysql2, trilogy]
+
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      postgres:
+        image: postgres:17
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fino_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      mysql:
+        image: mysql:8.4
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: fino_test
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      FINO_TEST_REDIS_HOST: localhost
+      FINO_TEST_ADAPTER: ${{ matrix.adapter }}
+      FINO_TEST_POSTGRES_HOST: localhost
+      FINO_TEST_POSTGRES_USER: postgres
+      FINO_TEST_POSTGRES_PASSWORD: postgres
+      FINO_TEST_POSTGRES_DB: fino_test
+      FINO_TEST_MYSQL_HOST: 127.0.0.1
+      FINO_TEST_MYSQL_USER: root
+      FINO_TEST_MYSQL_PASSWORD: root
+      FINO_TEST_MYSQL_DB: fino_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0"
           bundler-cache: true
 
       - run: bundle exec rspec
