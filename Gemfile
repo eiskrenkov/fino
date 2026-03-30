@@ -16,8 +16,13 @@ gem "guard-livereload"
 gem "rack-livereload"
 
 gem "puma"
-gem "rails", "~> #{ENV['RAILS_VERSION'] || '8.0'}"
-gem "sqlite3", "~> #{ENV['SQLITE_VERSION'] || '2.7'}"
+gem "rails", "~> #{ENV.fetch('RAILS_VERSION', '8.0')}"
+
+# Database adapters
+gem "mysql2", "~> #{ENV.fetch('MYSQL2_VERSION', '0')}"
+gem "pg", "~> #{ENV.fetch('POSTGRESQL_VERSION', '1')}"
+gem "sqlite3", "~> #{ENV.fetch('SQLITE3_VERSION', '2')}"
+gem "trilogy", "~> #{ENV.fetch('TRILOGY_VERSION', '2')}"
 
 gem "rspec", "~> 3.0"
 gem "rubocop", "~> 1.80.1", require: false

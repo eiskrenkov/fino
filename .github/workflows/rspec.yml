@@ -8,87 +8,57 @@ on:
 
 jobs:
   test:
+    name: "Ruby ${{ matrix.ruby-version }} / ${{ matrix.adapter-name }}${{ matrix.adapter_version && format(' {0}', matrix.adapter_version) || '' }}"
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        ruby-version: ["3.2", "3.3", "3.4"]
+        include:
+          - ruby-version: "3.2"
+            adapter: redis
+            adapter-name: Redis
+          - ruby-version: "3.2"
+            adapter: solid/sqlite3
+            adapter-name: SQLite
+          - ruby-version: "3.3"
+            adapter: redis
+            adapter-name: Redis
+          - ruby-version: "3.3"
+            adapter: solid/sqlite3
+            adapter-name: SQLite
+          - ruby-version: "3.4"
+            adapter: redis
+            adapter-name: Redis
+          - ruby-version: "3.4"
+            adapter: solid/sqlite3
+            adapter-name: SQLite
+          - ruby-version: "3.4"
+            adapter: solid/sqlite3
+            adapter-name: SQLite
+            adapter_version: "1.7"
+            rails-version: "7.2"
 
-    services:
-      redis:
-        image: redis:7
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    env:
-      FINO_TEST_REDIS_HOST: localhost
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby-version }}
-          bundler-cache: true
-
-      - run: bundle exec rspec
-
-  adapters:
-    name: "Ruby 4.0 / ${{ matrix.adapter }}"
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        adapter: [redis, sqlite3, postgresql, mysql2, trilogy]
-
-    services:
-      redis:
-        image: redis:7
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      postgres:
-        image: postgres:17
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: fino_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      mysql:
-        image: mysql:8.4
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: fino_test
-        options: >-
-          --health-cmd "mysqladmin ping -h 127.0.0.1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          # Run tests against all adapters for latest Ruby version
+          - ruby-version: "4.0"
+            adapter: redis
+            adapter-name: Redis
+          - ruby-version: "4.0"
+            adapter: solid/sqlite3
+            adapter-name: SQLite
+          - ruby-version: "4.0"
+            adapter: solid/postgresql
+            adapter-name: PostgreSQL
+          - ruby-version: "4.0"
+            adapter: solid/mysql2
+            adapter-name: MySQL (mysql2)
+          - ruby-version: "4.0"
+            adapter: solid/trilogy
+            adapter-name: "MySQL (trilogy)"
 
     env:
-      FINO_TEST_REDIS_HOST: localhost
       FINO_TEST_ADAPTER: ${{ matrix.adapter }}
+      FINO_TEST_REDIS_HOST: localhost
       FINO_TEST_POSTGRES_HOST: localhost
       FINO_TEST_POSTGRES_USER: postgres
       FINO_TEST_POSTGRES_PASSWORD: postgres
@@ -101,9 +71,49 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set adapter version override
+        if: matrix.adapter_version
+        run: |
+          GEM_NAME="${FINO_TEST_ADAPTER#solid/}"
+          ENV_NAME="$(echo "${GEM_NAME}" | tr '[:lower:]' '[:upper:]')_VERSION"
+          echo "${ENV_NAME}=${{ matrix.adapter_version }}" >> $GITHUB_ENV
+
+      - name: Set Rails version override
+        if: matrix.rails-version
+        run: echo "RAILS_VERSION=${{ matrix.rails-version }}" >> $GITHUB_ENV
+
+      - name: Clear lockfile for version overrides
+        if: matrix.adapter_version || matrix.rails-version
+        run: rm Gemfile.lock
+
+      - name: Start Redis
+        if: matrix.adapter == 'redis'
+        run: |
+          docker run -d --name redis -p 6379:6379 redis:7
+          timeout 30 bash -c 'until docker exec redis redis-cli ping 2>/dev/null; do sleep 1; done'
+
+      - name: Start PostgreSQL
+        if: matrix.adapter == 'solid/postgresql'
+        run: |
+          docker run -d --name postgres -p 5432:5432 \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_PASSWORD=postgres \
+            -e POSTGRES_DB=fino_test \
+            postgres:17
+          timeout 30 bash -c 'until docker exec postgres pg_isready 2>/dev/null; do sleep 1; done'
+
+      - name: Start MySQL
+        if: matrix.adapter == 'solid/mysql2' || matrix.adapter == 'solid/trilogy'
+        run: |
+          docker run -d --name mysql -p 3306:3306 \
+            -e MYSQL_ROOT_PASSWORD=root \
+            -e MYSQL_DATABASE=fino_test \
+            mysql:8.4
+          timeout 60 bash -c 'until docker exec mysql mysqladmin ping -h 127.0.0.1 --silent 2>/dev/null; do sleep 1; done'
+
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "4.0"
+          ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true
 
       - run: bundle exec rspec

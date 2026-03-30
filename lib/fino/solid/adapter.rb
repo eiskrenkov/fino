@@ -37,7 +37,7 @@ module Fino
 
         Fino::Solid::Setting.upsert(
           { key: setting_definition.key, data: data },
-          **unique_by_option(:key)
+          unique_by: :key
         )
       end
 

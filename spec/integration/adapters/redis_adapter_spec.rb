@@ -4,6 +4,8 @@ require "spec_helper"
 
 RSpec.describe "Redis adapter integration", type: :integration do
   before(:all) do
+    skip "Redis adapter not under test" unless TestHelpers.redis_adapter?
+
     Fino.reconfigure do
       adapter { TestHelpers.adapter }
       cache { TestHelpers.cache }
