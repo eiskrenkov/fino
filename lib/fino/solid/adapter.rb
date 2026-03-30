@@ -35,18 +35,15 @@ module Fino
           data["#{VARIANT_PREFIX}/#{variant.percentage}/#{VALUE_KEY}"] = serialize_value.call(variant.value)
         end
 
-        Fino::Solid::Setting.upsert(
-          { key: setting_definition.key, data: data },
-          unique_by: :key
-        )
+        Fino::Solid::Setting.upsert(key: setting_definition.key, data: data)
       end
 
       def read_persisted_setting_keys
         Fino::Solid::Setting.pluck(:key)
       end
 
-      def clear(setting_key)
-        Fino::Solid::Setting.where(key: setting_key).delete_all > 0
+      def clear(setting_key) # rubocop:disable Naming/PredicateMethod
+        Fino::Solid::Setting.where(key: setting_key).delete_all.positive?
       end
 
       def fetch_value_from(raw_adapter_data)
@@ -64,13 +61,10 @@ module Fino
 
       def record_ab_testing_conversion(setting_definition, variant, scope, time)
         Fino::Solid::Conversion.insert(
-          {
-            setting_key: setting_definition.key,
-            variant_id: variant.id,
-            scope: scope.to_s,
-            converted_at: time
-          },
-          unique_by: :idx_fino_conversions_unique
+          setting_key: setting_definition.key,
+          variant_id: variant.id,
+          scope: scope.to_s,
+          converted_at: time
         )
       end
 

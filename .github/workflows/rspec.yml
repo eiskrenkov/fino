@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: "Ruby ${{ matrix.ruby-version }} / ${{ matrix.adapter-name }}${{ matrix.adapter_version && format(' {0}', matrix.adapter_version) || '' }}"
+    name: "Ruby ${{ matrix.ruby-version }} / ${{ matrix.adapter-name }}${{ matrix.adapter-version && format(' {0}', matrix.adapter-version) || '' }}"
     runs-on: ubuntu-latest
 
     strategy:
@@ -33,11 +33,6 @@ jobs:
           - ruby-version: "3.4"
             adapter: solid/sqlite3
             adapter-name: SQLite
-          - ruby-version: "3.4"
-            adapter: solid/sqlite3
-            adapter-name: SQLite
-            adapter_version: "1.7"
-            rails-version: "7.2"
 
           # Run tests against all adapters for latest Ruby version
           - ruby-version: "4.0"
@@ -46,6 +41,10 @@ jobs:
           - ruby-version: "4.0"
             adapter: solid/sqlite3
             adapter-name: SQLite
+          - ruby-version: "4.0"
+            adapter: solid/sqlite3
+            adapter-name: SQLite
+            adapter-version: "1.7"
           - ruby-version: "4.0"
             adapter: solid/postgresql
             adapter-name: PostgreSQL
@@ -72,11 +71,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set adapter version override
-        if: matrix.adapter_version
+        if: matrix.adapter-version
         run: |
           GEM_NAME="${FINO_TEST_ADAPTER#solid/}"
           ENV_NAME="$(echo "${GEM_NAME}" | tr '[:lower:]' '[:upper:]')_VERSION"
-          echo "${ENV_NAME}=${{ matrix.adapter_version }}" >> $GITHUB_ENV
+          echo "${ENV_NAME}=${{ matrix.adapter-version }}" >> $GITHUB_ENV
 
       - name: Set Rails version override
         if: matrix.rails-version
