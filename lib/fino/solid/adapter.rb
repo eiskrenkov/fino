@@ -35,7 +35,7 @@ module Fino
           data["#{VARIANT_PREFIX}/#{variant.percentage}/#{VALUE_KEY}"] = serialize_value.call(variant.value)
         end
 
-        Fino::Solid::Setting.upsert(key: setting_definition.key, data: data)
+        Fino::Solid::Setting.upsert({ key: setting_definition.key, data: data })
       end
 
       def read_persisted_setting_keys
@@ -61,10 +61,12 @@ module Fino
 
       def record_ab_testing_conversion(setting_definition, variant, scope, time)
         Fino::Solid::Conversion.insert(
-          setting_key: setting_definition.key,
-          variant_id: variant.id,
-          scope: scope.to_s,
-          converted_at: time
+          {
+            setting_key: setting_definition.key,
+            variant_id: variant.id,
+            scope: scope.to_s,
+            converted_at: time
+          }
         )
       end
 
