@@ -35,7 +35,10 @@ module Fino
           data["#{VARIANT_PREFIX}/#{variant.percentage}/#{VALUE_KEY}"] = serialize_value.call(variant.value)
         end
 
-        Fino::Solid::Setting.upsert({ key: setting_definition.key, data: data })
+        Fino::Solid::Setting.upsert(
+          { key: setting_definition.key, data: data },
+          **unique_by_option(:key)
+        )
       end
 
       def read_persisted_setting_keys
@@ -66,7 +69,8 @@ module Fino
             variant_id: variant.id,
             scope: scope.to_s,
             converted_at: time
-          }
+          },
+          **unique_by_option(:idx_fino_conversions_unique)
         )
       end
 
@@ -96,6 +100,18 @@ module Fino
 
           memo << { percentage: percentage.to_f, value: value }
         end
+      end
+
+      private
+
+      def unique_by_option(constraint)
+        return {} if mysql_adapter?
+
+        { unique_by: constraint }
+      end
+
+      def mysql_adapter?
+        Fino::Solid::Record.connection.adapter_name.match?(/Mysql2|Trilogy/i)
       end
     end
   end
