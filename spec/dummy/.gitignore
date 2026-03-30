@@ -6,3 +6,5 @@
 
 /storage/*
 !/storage/.keep
+
+Gemfile.lock

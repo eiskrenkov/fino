@@ -82,10 +82,6 @@ jobs:
         if: matrix.rails-version
         run: echo "RAILS_VERSION=${{ matrix.rails-version }}" >> $GITHUB_ENV
 
-      - name: Clear lockfile for version overrides
-        if: matrix.adapter_version || matrix.rails-version
-        run: rm Gemfile.lock
-
       - name: Start Redis
         if: matrix.adapter == 'redis'
         run: |
