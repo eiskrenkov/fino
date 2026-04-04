@@ -45,6 +45,7 @@ jobs:
             adapter: solid/sqlite3
             adapter-name: SQLite
             adapter-version: "1.7"
+            rails-version: "7"
           - ruby-version: "4.0"
             adapter: solid/postgresql
             adapter-name: PostgreSQL
