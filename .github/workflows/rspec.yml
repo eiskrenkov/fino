@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: "Ruby ${{ matrix.ruby-version }} / ${{ matrix.adapter-name }}${{ matrix.adapter-version && format(' {0}', matrix.adapter-version) || '' }}"
+    name: "Ruby ${{ matrix.ruby-version }}${{ matrix.rails-version && format(' / Rails {0}', matrix.rails-version) || '' }} / ${{ matrix.adapter-name }}${{ matrix.adapter-version && format(' {0}', matrix.adapter-version) || '' }}"
     runs-on: ubuntu-latest
 
     strategy:
@@ -34,10 +34,14 @@ jobs:
             adapter: solid/sqlite3
             adapter-name: SQLite
 
-          # Run tests against all adapters for latest Ruby version
+          # Run tests against all adapters and 2 latest rails majors for latest Ruby version
           - ruby-version: "4.0"
             adapter: redis
             adapter-name: Redis
+          - ruby-version: "4.0"
+            adapter: redis
+            adapter-name: Redis
+            rails-version: "7"
           - ruby-version: "4.0"
             adapter: solid/sqlite3
             adapter-name: SQLite
@@ -50,11 +54,23 @@ jobs:
             adapter: solid/postgresql
             adapter-name: PostgreSQL
           - ruby-version: "4.0"
+            adapter: solid/postgresql
+            adapter-name: PostgreSQL
+            rails-version: "7"
+          - ruby-version: "4.0"
             adapter: solid/mysql2
             adapter-name: MySQL (mysql2)
           - ruby-version: "4.0"
+            adapter: solid/mysql2
+            adapter-name: MySQL (mysql2)
+            rails-version: "7"
+          - ruby-version: "4.0"
             adapter: solid/trilogy
             adapter-name: "MySQL (trilogy)"
+          - ruby-version: "4.0"
+            adapter: solid/trilogy
+            adapter-name: "MySQL (trilogy)"
+            rails-version: "7"
 
     env:
       FINO_TEST_ADAPTER: ${{ matrix.adapter }}
