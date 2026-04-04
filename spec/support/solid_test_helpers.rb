@@ -31,6 +31,14 @@ module SolidTestHelpers
         username: ENV.fetch("FINO_TEST_POSTGRES_USER", "postgres"),
         password: ENV.fetch("FINO_TEST_POSTGRES_PASSWORD", "")
       }
+    when :trilogy
+      {
+        adapter: "trilogy",
+        host: ENV.fetch("FINO_TEST_MYSQL_HOST", "mysql.fino.orb.local"),
+        database: ENV.fetch("FINO_TEST_MYSQL_DB", "fino_test"),
+        username: ENV.fetch("FINO_TEST_MYSQL_USER", "root"),
+        password: ENV.fetch("FINO_TEST_MYSQL_PASSWORD", "")
+      }
     when :mysql2
       {
         adapter: "mysql2",
