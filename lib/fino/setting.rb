@@ -20,6 +20,10 @@ module Fino::Setting
       raise NotImplementedError
     end
 
+    # Deserialize must raise if adapter value is unrecorgnisable
+    # This exception must be handled by the higher layer, logged and user code must receive default / nil
+    # Deserialize is used on setting reads
+    #
     def deserialize(raw_value)
       raise NotImplementedError
     end

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+Fino::UnableToDeserializeValue = Class.new(Fino::Error)
+
 class Fino::Settings::Integer
   include Fino::Setting
   include Fino::Settings::Numeric
@@ -12,7 +14,9 @@ class Fino::Settings::Integer
     end
 
     def deserialize(_setting_definition, raw_value)
-      raw_value.to_i
+      Integer(raw_value)
+    rescue ArgumentError
+      raise Fino::UnableToDeserializeValue
     end
   end
 end

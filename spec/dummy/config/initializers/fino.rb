@@ -8,6 +8,52 @@ Rails.application.configure do
   config.fino.instrument = true
 end
 
+Fino::InvalidValue = Class.new(Fino::Error)
+
+class SemanticVersion
+  include Comparable
+
+  def self.correct?(value)
+    Gem::Version.correct?(value)
+  end
+
+  attr_reader :version
+
+  def initialize(version)
+    @version = Gem::Version.new(version)
+  end
+
+  def <=>(other)
+    version <=> other.version
+  end
+
+  def to_s
+    version.to_s
+  end
+end
+
+class FinoSemanticVersion
+  include Fino::Setting
+
+  self.type_identifier = :version
+
+  class << self
+    def serialize(_setting_definition, value)
+      value.to_s
+    end
+
+    def deserialize(_setting_definition, raw_value)
+      SemanticVersion.new(raw_value)
+    end
+
+    def validate!(raw_value)
+      raise Fino::InvalidValue, "must be in vX.X.X format" unless SemanticVersion.correct?(raw_value)
+    end
+  end
+end
+
+Fino.register_setting_type :version, FinoSemanticVersion
+
 Fino.configure do
   case ENV.fetch("FINO_DUMMY_ADAPTER", nil)
   when "redis"
@@ -61,6 +107,11 @@ Fino.configure do
               ],
               default: "red",
               description: "Color of the purchase button"
+
+      setting :new_checkout_flow_min_client_version,
+              :version,
+              default: SemanticVersion.new("1.5.0"),
+              description: "Minimum client version required to use the new checkout flow"
     end
 
     section :llm, label: "LLM" do

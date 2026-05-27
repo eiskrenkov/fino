@@ -63,16 +63,16 @@ class Fino::Library
 
     setting_name, raw_value = data.first
     setting_definition = build_setting_definition(setting_name, at: at)
-    value = setting_definition.deserialize(raw_value)
+    value = setting_definition.parse(raw_value)
 
-    overrides = raw_overrides.transform_values { |v| setting_definition.deserialize(v) }
+    overrides = raw_overrides.transform_values { |v| setting_definition.parse(v) }
 
     experiment = Fino::AbTesting::Experiment.new(setting_definition)
 
     raw_variants.map do |percentage, value|
       experiment << Fino::AbTesting::Variant.new(
         percentage: percentage,
-        value: setting_definition.deserialize(value)
+        value: setting_definition.parse(value)
       )
     end
 
