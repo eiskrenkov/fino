@@ -21,6 +21,30 @@ RSpec.describe Fino::Settings::Numeric do
         expect(described_class.for("seconds")).to be_a(described_class::Seconds)
       end
 
+      it "returns Minutes for 'min'" do
+        expect(described_class.for("min")).to be_a(described_class::Minutes)
+      end
+
+      it "returns Minutes for 'minutes'" do
+        expect(described_class.for("minutes")).to be_a(described_class::Minutes)
+      end
+
+      it "returns Hours for 'hour'" do
+        expect(described_class.for("hour")).to be_a(described_class::Hours)
+      end
+
+      it "returns Hours for 'hours'" do
+        expect(described_class.for("hours")).to be_a(described_class::Hours)
+      end
+
+      it "returns Days for 'day'" do
+        expect(described_class.for("day")).to be_a(described_class::Days)
+      end
+
+      it "returns Days for 'days'" do
+        expect(described_class.for("days")).to be_a(described_class::Days)
+      end
+
       it "returns Generic for unknown identifiers" do
         unit = described_class.for("requests")
         expect(unit).to be_a(described_class::Generic)
@@ -40,6 +64,7 @@ RSpec.describe Fino::Settings::Numeric do
             setting :http_read_timeout, :integer, default: 200, unit: :ms
             setting :http_open_timeout, :integer, default: 1, unit: :sec
             setting :max_retries, :integer, default: 3
+            setting :cleanup_interval, :integer, default: 30, unit: :day
           end
 
           section :rates do
@@ -88,6 +113,27 @@ RSpec.describe Fino::Settings::Numeric do
         it "converts correctly" do
           setting = Fino.setting(:refresh_interval, at: :rates)
           expect(setting.value(unit: :ms)).to eq(500.0)
+        end
+      end
+
+      context "when converting days to seconds" do
+        it "converts correctly" do
+          setting = Fino.setting(:cleanup_interval, at: :integration)
+          expect(setting.value(unit: :sec)).to eq(2_592_000)
+        end
+      end
+
+      context "when converting days to hours" do
+        it "converts correctly" do
+          setting = Fino.setting(:cleanup_interval, at: :integration)
+          expect(setting.value(unit: :hours)).to eq(720)
+        end
+      end
+
+      context "when converting days to minutes" do
+        it "converts correctly" do
+          setting = Fino.setting(:cleanup_interval, at: :integration)
+          expect(setting.value(unit: :minutes)).to eq(43_200)
         end
       end
     end
