@@ -49,7 +49,7 @@
                           <div class="truncate text-xl font-semibold text-gray-800">
                             <span><%= setting.value %></span>
                             <% if setting.unit.present? %>
-                              <span class="text-base font-medium text-gray-600"><%= setting.unit.short_name %></span>
+                              <span class="text-base font-medium text-gray-600"><%= setting.unit.short_name.pluralize(setting.value) %></span>
                             <% end %>
                           </div>
                         <% when Fino::Settings::Select %>
