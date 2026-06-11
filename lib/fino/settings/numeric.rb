@@ -47,17 +47,56 @@ module Fino::Settings::Numeric
       end
     end
 
+    class Minutes < Generic
+      include Time
+
+      def initialize = super("Minutes", "min")
+
+      def base_factor
+        60
+      end
+    end
+
+    class Hours < Generic
+      include Time
+
+      def initialize = super("Hours", "hour")
+
+      def base_factor
+        3600
+      end
+    end
+
+    class Days < Generic
+      include Time
+
+      def initialize = super("Days", "day")
+
+      def base_factor
+        86_400
+      end
+    end
+
+    UNITS = {
+      "ms" => Milliseconds,
+      "milliseconds" => Milliseconds,
+      "sec" => Seconds,
+      "seconds" => Seconds,
+      "min" => Minutes,
+      "minutes" => Minutes,
+      "hour" => Hours,
+      "hours" => Hours,
+      "day" => Days,
+      "days" => Days
+    }.freeze
+
     module_function
 
     def for(identifier)
-      case identifier.to_s
-      when "ms", "milliseconds"
-        Milliseconds.new
-      when "sec", "seconds"
-        Seconds.new
-      else
-        Generic.new(identifier.to_s.capitalize)
-      end
+      klass = UNITS[identifier.to_s]
+      return klass.new if klass
+
+      Generic.new(identifier.to_s.capitalize)
     end
   end
 
