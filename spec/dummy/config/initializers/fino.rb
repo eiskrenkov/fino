@@ -52,6 +52,12 @@ Fino.configure do
             default: 1000,
             description: "Maximum API requests per minute per user to prevent abuse"
 
+    setting :session_lifetime,
+            :integer,
+            default: 7,
+            unit: :day,
+            description: "How long a user session stays valid before re-authentication is required"
+
     section :storefront, label: "Storefront" do
       setting :purchase_button_color,
               :select,
