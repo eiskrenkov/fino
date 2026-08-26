@@ -39,17 +39,16 @@ class Fino::Cache::Memory
 
     expire_if_ready
 
-    missing_keys = keys - hash.keys
+    cached = hash.slice(*keys)
+    missing_keys = keys - cached.keys
 
     if missing_keys.any?
-      results = block.call(missing_keys)
-
-      results.each do |key, value|
-        write(key, value)
+      block.call(missing_keys).each do |key, value|
+        cached[key] = write(key, value)
       end
     end
 
-    hash.values_at(*keys)
+    keys.map { |key| cached[key] }
   end
 
   def delete(key)

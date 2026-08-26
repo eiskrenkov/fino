@@ -9,10 +9,8 @@ class Fino::Pipe::Cache
   end
 
   def read(setting_definition)
-    return cache.read(setting_definition.key) if cache.exist?(setting_definition.key)
-
-    pipe.read(setting_definition).tap do |result|
-      cache.write(setting_definition.key, result)
+    cache.fetch(setting_definition.key) do
+      pipe.read(setting_definition)
     end
   end
 
