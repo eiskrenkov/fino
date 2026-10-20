@@ -9,6 +9,7 @@ class Fino::Rails::SettingsController < Fino::Rails::ApplicationController
 
   def edit
     @setting = Fino.setting(setting_name, at: section_name)
+    load_setting_meta([@setting])
     @analysis = Fino.analyse(setting_name, at: section_name) if @setting.ab_tested?
   rescue Fino::Library::AbTestingAnalysisSupport::AdapterDoesNotSupportAbTestingAnalysis
     nil

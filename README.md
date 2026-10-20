@@ -355,6 +355,22 @@ Rails.application.configure do
 end
 ```
 
+### Setting meta
+
+Use `config.fino.setting_meta` to show additional information next to each setting in the UI (e.g. when and by whom
+it was last changed). It's called once per page with all displayed settings and must return a hash of setting keys
+to strings:
+
+```ruby
+Rails.application.configure do
+  config.fino.setting_meta = lambda do |settings|
+    SettingChange.where(key: settings.map(&:key)).to_h do |change|
+      [change.key, "Changed #{change.created_at.to_fs(:short)} by #{change.author}"]
+    end
+  end
+end
+```
+
 <img width="1493" height="676" alt="Screenshot 2025-09-19 at 13 09 06" src="https://github.com/user-attachments/assets/19b6147a-e18c-41cf-aac7-99111efcc9d5" />
 
 <img width="1775" height="845" alt="Screenshot 2025-09-19 at 13 09 33" src="https://github.com/user-attachments/assets/c0010abd-285d-43d0-ae5d-ce0edb781309" />
