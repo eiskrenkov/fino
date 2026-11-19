@@ -91,6 +91,16 @@ RSpec.describe Fino::Cache::Memory do
       expect { subject.fetch_multi("key_1", "key_2", "key_3") { raise } }
         .not_to raise_error
     end
+
+    it "returns values cached before the block even if the cache is cleared while the block runs" do
+      result = subject.fetch_multi("key_1", "key_2") do |missing_keys|
+        subject.clear
+
+        missing_keys.zip([2])
+      end
+
+      expect(result).to eq([1, 2])
+    end
   end
 
   describe "#delete" do
