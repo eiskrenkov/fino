@@ -42,7 +42,8 @@ class Fino::Rails::Engine < Rails::Engine
       instrument: Rails.env.development?,
       log: Rails.env.development?,
       cache_within_request: true,
-      preload_before_request: false
+      preload_before_request: false,
+      setting_meta: nil
     )
   end
 

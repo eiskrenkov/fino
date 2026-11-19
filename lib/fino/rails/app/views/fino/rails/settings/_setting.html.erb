@@ -19,6 +19,10 @@
         <% if setting.description.present? %>
           <p class="text-sm text-gray-500 whitespace-normal"><%= setting.description %></p>
         <% end %>
+
+        <% if (meta = setting_meta_for(setting)).present? %>
+          <p class="text-xs text-gray-500 whitespace-normal"><%= meta %></p>
+        <% end %>
       </div>
 
       <div>

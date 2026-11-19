@@ -27,5 +27,16 @@ class Fino::Rails::ApplicationController < ActionController::Base
       end
   end
 
-  helper_method :sections, :current_section
+  private
+
+  def load_setting_meta(settings)
+    provider = ::Rails.application.config.fino.setting_meta
+    @setting_meta = provider ? provider.call(settings).to_h : {}
+  end
+
+  def setting_meta_for(setting)
+    @setting_meta&.[](setting.key)
+  end
+
+  helper_method :sections, :current_section, :setting_meta_for
 end

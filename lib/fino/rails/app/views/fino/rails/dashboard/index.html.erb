@@ -29,6 +29,10 @@
                         </h2>
                       </div>
 
+                      <% if (meta = setting_meta_for(setting)).present? %>
+                        <p class="text-xs text-gray-500 truncate"><%= meta %></p>
+                      <% end %>
+
                       <div>
                         <% case setting %>
                         <% when Fino::Settings::Boolean %>

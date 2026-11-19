@@ -4,11 +4,17 @@
   <div class="container mx-auto">
     <%= form_with url: update_setting_path(section: @setting.section_name || :general, setting: @setting.name), method: :put, local: true do |f| %>
       <div class="border-b border-gray-200 pb-3 sm:flex sm:items-center sm:justify-between">
-        <h3 class="text-base font-semibold text-gray-900">
-          <%= link_to @setting.section_definition&.label || "General", settings_section_path(section: @setting.section_name || :general), class: "hover:text-gray-700" %>
-          <span class="mx-2 text-gray-400">/</span>
-          <%= @setting.name %>
-        </h3>
+        <div>
+          <h3 class="text-base font-semibold text-gray-900">
+            <%= link_to @setting.section_definition&.label || "General", settings_section_path(section: @setting.section_name || :general), class: "hover:text-gray-700" %>
+            <span class="mx-2 text-gray-400">/</span>
+            <%= @setting.name %>
+          </h3>
+
+          <% if (meta = setting_meta_for(@setting)).present? %>
+            <p class="mt-1 text-sm text-gray-500"><%= meta %></p>
+          <% end %>
+        </div>
 
         <div class="mt-3 flex gap-2 sm:mt-0 sm:ml-4">
           <% if @setting.try(:refreshable?) %>
